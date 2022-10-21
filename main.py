@@ -111,7 +111,7 @@ class FileMenuDropdown(tk.Menu):
 
             render = ImageTk.PhotoImage(load)
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
-
+            parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
             picture_label = tk.Label(window)
             picture_label.configure(image=render)
             picture_label.pack()
@@ -240,16 +240,24 @@ class Lab1MenuDropdown(tk.Menu):
         plt.show()
 
 
+class Lab2MenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+
+
+
 class MenuTopBar(tk.Menu):
     def __init__(self, parent: Program):
         tk.Menu.__init__(self, parent, tearoff=False)
 
         self.menu = tk.Menu(self, tearoff=0)
         self.lab1menu = tk.Menu(self, tearoff=0)
+        self.lab2menu = tk.Menu(self, tearoff=0)
         self.fill(parent)
 
         self.fileMenuDropdown = FileMenuDropdown()
         self.lab1MenuDropdown = Lab1MenuDropdown()
+        self.lab2MenuDropdown = Lab2MenuDropdown()
 
     def fill(self, parent: Program):
         self.add_cascade(label="Plik", menu=self.menu)
@@ -259,6 +267,10 @@ class MenuTopBar(tk.Menu):
 
         self.add_cascade(label="Lab1", menu=self.lab1menu)
         self.lab1menu.add_command(label="Histogram", command=lambda: self.lab1MenuDropdown.showHistogram(parent))
+
+        self.add_cascade(label="Lab2", menu=self.lab2menu)
+        self.lab2menu.add_command(label="Rozciaganie histogramu")
+        self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu")
 
 
 if __name__ == "__main__":
