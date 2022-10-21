@@ -43,6 +43,7 @@ class Program(tk.Tk):
         self.pil_image_data = None  # Image data in Image format
         self.all_open_image_data = {}  # keys: names of open windows, value: image objects.
         self.imageHelper = ImageHelper()
+        self.window = None;
 
 class ImageHelper(tk.Menu):
     def __init__(self):
@@ -93,9 +94,9 @@ class FileMenuDropdown(tk.Menu):
 
         # Assigns picture to variable
         if imagePath:
-            window = tk.Toplevel(parent)  # create window
+            self.window = tk.Toplevel(parent)  # create window
             title = f"Obraz pierwotny - {os.path.basename(imagePath)}"
-            window.title(title)
+            self.window.title(title)
             parent.cvImage = cv2.imread(imagePath, cv2.IMREAD_UNCHANGED)
             load = Image.open(imagePath)
             load.convert("L")
@@ -112,10 +113,10 @@ class FileMenuDropdown(tk.Menu):
             render = ImageTk.PhotoImage(load)
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
             parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
-            picture_label = tk.Label(window)
+            picture_label = tk.Label(self.window)
             picture_label.configure(image=render)
             picture_label.pack()
-            window.mainloop()
+            self.window.mainloop()
 
     def saveImage(self, parent):
         """
@@ -245,6 +246,18 @@ class Lab2MenuDropdown(tk.Menu):
         tk.Menu.__init__(self, tearoff=False)
 
 
+class Scaling(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+
+    def resize(self, parent, fx, fy):
+        """
+        Resize the image and opens in a new window
+        """
+        imagePath = parent.loadedImageData[2].filename;
+        title = f"Obraz skalowany - {os.path.basename(imagePath)}"
+        imgScaled = cv2.resize(parent.cvImage, (0, 0), fx=fx, fy=fy)
+        cv2.imshow(title, imgScaled)
 
 class MenuTopBar(tk.Menu):
     def __init__(self, parent: Program):
@@ -253,11 +266,13 @@ class MenuTopBar(tk.Menu):
         self.menu = tk.Menu(self, tearoff=0)
         self.lab1menu = tk.Menu(self, tearoff=0)
         self.lab2menu = tk.Menu(self, tearoff=0)
+        self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
 
         self.fileMenuDropdown = FileMenuDropdown()
         self.lab1MenuDropdown = Lab1MenuDropdown()
         self.lab2MenuDropdown = Lab2MenuDropdown()
+        self.resizeDropdown = Scaling()
 
     def fill(self, parent: Program):
         self.add_cascade(label="Plik", menu=self.menu)
@@ -271,6 +286,15 @@ class MenuTopBar(tk.Menu):
         self.add_cascade(label="Lab2", menu=self.lab2menu)
         self.lab2menu.add_command(label="Rozciaganie histogramu")
         self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu")
+
+        self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
+        self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
+        self.scalingMenu.add_command(label="150%", command=lambda: self.resizeDropdown.resize(parent, 2.5, 2.5))
+        self.scalingMenu.add_command(label="100%", command=lambda: self.resizeDropdown.resize(parent, 2, 2))
+        self.scalingMenu.add_command(label="50%", command=lambda: self.resizeDropdown.resize(parent, 0.5, 0.5))
+        self.scalingMenu.add_command(label="25%", command=lambda: self.resizeDropdown.resize(parent, 0.25, 0.25))
+        self.scalingMenu.add_command(label="20%", command=lambda: self.resizeDropdown.resize(parent, 0.2, 0.2))
+        self.scalingMenu.add_command(label="10%", command=lambda: self.resizeDropdown.resize(parent, 0.1, 0.1))
 
 
 if __name__ == "__main__":
