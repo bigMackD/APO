@@ -35,7 +35,7 @@ class Program(tk.Tk):
         self.loadedImageMode = None  # Can be RGB for colour images or L for greyscale
 
         self.imageHelper = None
-        # self.edited_image_data = []  # Edited image [path, editable_tada, list(PIL_DATA)]
+        self.editedImageData = []  # Edited image [path, editable_tada, list(PIL_DATA)]
         self.saveHelperImageData = []  # When saving edited image to file, image from this variable is used
         self.cvImage = None  # image as cv2 object, required for some operations
         self.histogramData = None  # Data used for creating histograms
@@ -44,6 +44,7 @@ class Program(tk.Tk):
         self.all_open_image_data = {}  # keys: names of open windows, value: image objects.
         self.imageHelper = ImageHelper()
         self.window = None;
+
 
 class ImageHelper(tk.Menu):
     def __init__(self):
@@ -94,9 +95,13 @@ class FileMenuDropdown(tk.Menu):
 
         # Assigns picture to variable
         if imagePath:
-            self.window = tk.Toplevel(parent)  # create window
+            window = tk.Toplevel(parent)  # create window
             title = f"Obraz pierwotny - {os.path.basename(imagePath)}"
-            self.window.title(title)
+            helper_index = 0
+            while title in parent.all_open_image_data.keys():
+                helper_index += 1
+                title = f"Obraz pierwotny ({str(helper_index)}) - {os.path.basename(imagePath)}"
+            window.title(title)
             parent.cvImage = cv2.imread(imagePath, cv2.IMREAD_UNCHANGED)
             load = Image.open(imagePath)
             load.convert("L")
@@ -107,16 +112,22 @@ class FileMenuDropdown(tk.Menu):
                 parent.loadedImageData = [os.path.basename(imagePath), content, load]
             else:
                 parent.loadedImageData = [os.path.basename(imagePath),
-                                            list(Image.fromarray(parent.cvImage).getdata()),
-                                            load]
+                                          list(Image.fromarray(parent.cvImage).getdata()),
+                                          load]
 
             render = ImageTk.PhotoImage(load)
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
             parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
-            picture_label = tk.Label(self.window)
+            parent.editedImageData = [parent.loadedImageData[0], parent.loadedImageData[1]]
+            parent.all_open_image_data[title] = Image.open(imagePath)
+            picture_label = tk.Label(window)
             picture_label.configure(image=render)
             picture_label.pack()
-            self.window.mainloop()
+            window.mainloop()
+
+            def on_closing():
+                del parent.all_open_image_data[title]  # remove image from list of open images
+                window.destroy()
 
     def saveImage(self, parent):
         """
@@ -245,6 +256,108 @@ class Lab2MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
+    def strechHistogram(self, parent):
+        self.strechHistogramInputWindow = tk.Toplevel(parent)
+        self.strechHistogramInputWindow.resizable(False, False)
+        self.strechHistogramInputWindow.title("Rozciąganie histogramu")
+        self.strechHistogramInputWindow.focus_set()
+
+        stretchSettingsBox = tk.Frame(self.strechHistogramInputWindow, width=150, height=150)
+
+        fromMinLabel = tk.Label(stretchSettingsBox, text="Od - Min", padx=10)
+        fromMaxLabel = tk.Label(stretchSettingsBox, text="Od - Max", padx=10)
+
+        fromMinInput = tk.Entry(stretchSettingsBox, width=10)
+        fromMaxInput = tk.Entry(stretchSettingsBox, width=10)
+
+        toMinLabel = tk.Label(stretchSettingsBox, text="Do - Min", padx=10)
+        toMaxLabel = tk.Label(stretchSettingsBox, text="Do - Max", padx=10)
+        toMinInput = tk.Entry(stretchSettingsBox, width=10)
+        toMaxInput = tk.Entry(stretchSettingsBox, width=10)
+
+        button_area = tk.Frame(self.strechHistogramInputWindow, width=100, pady=10)
+        button = tk.Button(button_area, text="Wykonaj", width=10,
+                           command=lambda: self.calculateHistogramStretch(parent,
+                                                                          fromMinInput.get(),
+                                                                          fromMaxInput.get(),
+                                                                          toMinInput.get(),
+                                                                          toMaxInput.get()))
+
+        button.pack()
+        stretchSettingsBox.grid(column=0, row=0)
+        fromMinLabel.grid(column=0, row=0, padx=(25, 5))
+        fromMaxLabel.grid(column=1, row=0, padx=(5, 15))
+        toMinLabel.grid(column=3, row=0, padx=(15, 5))
+        toMaxLabel.grid(column=4, row=0, padx=(5, 20))
+
+        fromMinInput.grid(column=0, row=1, padx=(20, 5))
+        fromMaxInput.grid(column=1, row=1, padx=(5, 15))
+        toMinInput.grid(column=3, row=1, padx=(15, 5))
+        toMaxInput.grid(column=4, row=1, padx=(5, 20))
+        button_area.grid(column=0, row=1)
+
+    def calculateHistogramStretch(self, parent, from_min, from_max, to_min, to_max):
+        try:
+            int(from_min)
+            int(from_max)
+            int(to_min)
+            int(to_max)
+        except ValueError:
+            print("Wpisana wartosc musi by numerem.")
+            return
+        for value in [from_min, from_max, to_min, to_max]:
+            if not 0 < int(value) < 255:
+                print("Wartosc poza zakresem 0-255")
+                return
+        from_min = int(from_min)
+        from_max = int(from_max)
+        to_min = int(to_min)
+        to_max = int(to_max)
+        values_count = [0 for i in range(256)]
+        for value in parent.loadedImageData[1]:
+            values_count[value] += 1
+        for index in range(len(parent.editedImageData[1])):
+            if parent.editedImageData[1][index] < from_min:
+                parent.editedImageData[1][index] = from_min
+            if parent.editedImageData[1][index] > from_max:
+                parent.editedImageData[1][index] = from_max
+            else:
+                parent.editedImageData[1][index] = \
+                    (((parent.editedImageData[1][index] - from_min) * (to_max - to_min)) /
+                     (from_max - from_min)) + to_min
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                               parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(parent.editedImageData[1])
+        self.hisogramStrechResultWindow(parent)
+
+    def hisogramStrechResultWindow(self, parent):
+        self.strechHistogramInputWindow.destroy()
+        stretchResultWindow = tk.Toplevel()
+        img_title = "Obraz wynikowy - rozciąganie od zakresu do zakresu"
+
+        # helper_index = 0
+        # while img_title in parent.all_open_image_data.keys():
+        #     helper_index += 1
+        #     img_title = f"Obraz wynikowy - rozciąganie od zakresu do zakresu({str(helper_index)})"
+        # stretch_result_window.title(img_title)
+        #
+        # def on_closing():
+        #     del parent.all_open_image_data[img_title]
+        #     stretch_result_window.destroy()
+        #
+        # stretch_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+        # parent.all_open_image_data[img_title] = list(parent.edited_image_data[1])
+        # parent.pil_image_data = Image.new(parent.loaded_image_mode,
+        #                                   parent.loaded_image_data[2].size)
+        # parent.pil_image_data.putdata(parent.edited_image_data[1])
+        # picture_label = tk.Label(stretch_result_window)
+        # picture_label.pack()
+        #
+        # parent.histogram_image_data = ["Stretched", parent.pil_image_data.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pil_image_data)
+        # picture_label.configure(image=selected_picture)
+        # stretch_result_window.mainloop()
+
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -258,6 +371,7 @@ class Scaling(tk.Menu):
         title = f"Obraz skalowany - {os.path.basename(imagePath)}"
         imgScaled = cv2.resize(parent.cvImage, (0, 0), fx=fx, fy=fy)
         cv2.imshow(title, imgScaled)
+
 
 class MenuTopBar(tk.Menu):
     def __init__(self, parent: Program):
@@ -284,7 +398,8 @@ class MenuTopBar(tk.Menu):
         self.lab1menu.add_command(label="Histogram", command=lambda: self.lab1MenuDropdown.showHistogram(parent))
 
         self.add_cascade(label="Lab2", menu=self.lab2menu)
-        self.lab2menu.add_command(label="Rozciaganie histogramu")
+        self.lab2menu.add_command(label="Rozciaganie histogramu",
+                                  command=lambda: self.lab2MenuDropdown.strechHistogram(parent))
         self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu")
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
