@@ -477,6 +477,23 @@ class Lab2MenuDropdown(tk.Menu):
         pictureLabel.configure(image=selectedPicture)
         negateResultWindow.mainloop()
 
+    def thresholdImage(self, parent):
+        self.thresholdImageSettings = tk.Toplevel(parent)
+        self.thresholdImageSettings.title("Ustawienia progowania")
+        self.thresholdImageSettings.resizable(False, False)
+        self.thresholdImageSettings.geometry("300x80")
+        self.thresholdImageSettings.focus_set()
+
+        label = tk.Label(self.thresholdImageSettings, text="Próg (od 1 do 255)", justify=tk.LEFT, anchor='w')
+
+        entry = tk.Entry(self.thresholdImageSettings, width=10)
+        entry.insert(0, "1")
+        button = tk.Button(self.thresholdImageSettings, text="Wykonaj", width=10,
+                           )
+
+        label.pack()
+        entry.pack()
+        button.pack()
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -523,6 +540,8 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab2MenuDropdown.equalizeImage(parent))
         self.lab2menu.add_command(label="Negacja obrazu",
                                   command=lambda: self.lab2MenuDropdown.negateImage(parent))
+        self.lab2menu.add_command(label="Progowanie obrazu",
+                                  command=lambda: self.lab2MenuDropdown.thresholdImage(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
