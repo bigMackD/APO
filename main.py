@@ -314,6 +314,8 @@ class Lab2MenuDropdown(tk.Menu):
         to_min = int(to_min)
         to_max = int(to_max)
         values_count = [0 for i in range(256)]
+
+        #iterate over each pixel and apply cdf
         for value in parent.loadedImageData[1]:
             values_count[value] += 1
         for index in range(len(parent.editedImageData[1])):
@@ -359,6 +361,7 @@ class Lab2MenuDropdown(tk.Menu):
         stretchResultWindow.mainloop()
 
     def equalizeImage(self, parent):
+        #get cdf
         def calculateCumulativeDistribution(image_list):
             cumulativeDistribution = {}
             image_list_sorted = sorted(image_list)
@@ -388,6 +391,7 @@ class Lab2MenuDropdown(tk.Menu):
         def calculateEqualizedValue(value):
             return round(((cumulativeDistribution[value] - minCumulativeDistribution) / ((m * n) - minCumulativeDistribution)) * 255)
 
+        #appends cdf to each pixel
         def createEqualizedImage(original):
             result = []
             for pixel in original:
@@ -426,6 +430,52 @@ class Lab2MenuDropdown(tk.Menu):
         selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
         picture_label.configure(image=selectedPicture)
         equalizeResultWindow.mainloop()
+
+    def negateImage(self, parent):
+        """ Negate image"""
+        minPixelValue = parent.loadedImageData[1][0]
+        maxPixelValue = parent.loadedImageData[1][0]
+        imageNegated = list(parent.loadedImageData[1])
+
+        #Get min and max pixel values
+        for pixel in parent.loadedImageData[1]:
+            if pixel > maxPixelValue:
+                maxPixelValue = pixel
+            if pixel < minPixelValue:
+                minPixelValue = pixel
+
+        #Iterate and negate each pixel
+        for index in range(len(parent.loadedImageData[1])):
+            imageNegated[index] = maxPixelValue - parent.loadedImageData[1][index]
+
+        negateResultWindow = tk.Toplevel(parent)
+        imageTitle = "Obraz wynikowy - negacja"
+
+        index = 0
+        while imageTitle in parent.allOpenImagesData.keys():
+            index += 1
+            imageTitle = f"Obraz wynikowy - negacja({str(index)})"
+        negateResultWindow.title(imageTitle)
+
+        def on_closing():
+            del parent.allOpenImagesData[imageTitle]
+            negateResultWindow.destroy()
+
+        negateResultWindow.protocol("WM_DELETE_WINDOW", on_closing)
+
+        pictureLabel = tk.Label(negateResultWindow)
+        pictureLabel.pack()
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                          parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(imageNegated)
+        parent.allOpenImagesData[imageTitle] = parent.pilImageData
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                                  parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(imageNegated)
+
+        selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
+        pictureLabel.configure(image=selectedPicture)
+        negateResultWindow.mainloop()
 
 
 class Scaling(tk.Menu):
@@ -471,6 +521,8 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab2MenuDropdown.strechHistogram(parent))
         self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu",
                                   command=lambda: self.lab2MenuDropdown.equalizeImage(parent))
+        self.lab2menu.add_command(label="Negacja obrazu",
+                                  command=lambda: self.lab2MenuDropdown.negateImage(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
