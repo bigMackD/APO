@@ -40,8 +40,8 @@ class Program(tk.Tk):
         self.cvImage = None  # image as cv2 object, required for some operations
         self.histogramData = None  # Data used for creating histograms
 
-        self.pil_image_data = None  # Image data in Image format
-        self.all_open_image_data = {}  # keys: names of open windows, value: image objects.
+        self.pilImageData = None  # Image data in Image format
+        self.allOpenImagesData = {}  # keys: names of open windows, value: image objects.
         self.imageHelper = ImageHelper()
         self.window = None;
 
@@ -98,7 +98,7 @@ class FileMenuDropdown(tk.Menu):
             window = tk.Toplevel(parent)  # create window
             title = f"Obraz pierwotny - {os.path.basename(imagePath)}"
             helper_index = 0
-            while title in parent.all_open_image_data.keys():
+            while title in parent.allOpenImagesData.keys():
                 helper_index += 1
                 title = f"Obraz pierwotny ({str(helper_index)}) - {os.path.basename(imagePath)}"
             window.title(title)
@@ -119,14 +119,14 @@ class FileMenuDropdown(tk.Menu):
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
             parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
             parent.editedImageData = [parent.loadedImageData[0], parent.loadedImageData[1]]
-            parent.all_open_image_data[title] = Image.open(imagePath)
+            parent.allOpenImagesData[title] = Image.open(imagePath)
             picture_label = tk.Label(window)
             picture_label.configure(image=render)
             picture_label.pack()
             window.mainloop()
 
             def on_closing():
-                del parent.all_open_image_data[title]  # remove image from list of open images
+                del parent.allOpenImagesData[title]  # remove image from list of open images
                 window.destroy()
 
     def saveImage(self, parent):
@@ -335,28 +335,28 @@ class Lab2MenuDropdown(tk.Menu):
         stretchResultWindow = tk.Toplevel()
         img_title = "Obraz wynikowy - rozciąganie od zakresu do zakresu"
 
-        # helper_index = 0
-        # while img_title in parent.all_open_image_data.keys():
-        #     helper_index += 1
-        #     img_title = f"Obraz wynikowy - rozciąganie od zakresu do zakresu({str(helper_index)})"
-        # stretch_result_window.title(img_title)
-        #
-        # def on_closing():
-        #     del parent.all_open_image_data[img_title]
-        #     stretch_result_window.destroy()
-        #
-        # stretch_result_window.protocol("WM_DELETE_WINDOW", on_closing)
-        # parent.all_open_image_data[img_title] = list(parent.edited_image_data[1])
-        # parent.pil_image_data = Image.new(parent.loaded_image_mode,
-        #                                   parent.loaded_image_data[2].size)
-        # parent.pil_image_data.putdata(parent.edited_image_data[1])
-        # picture_label = tk.Label(stretch_result_window)
-        # picture_label.pack()
-        #
-        # parent.histogram_image_data = ["Stretched", parent.pil_image_data.getdata()]
-        # selected_picture = ImageTk.PhotoImage(parent.pil_image_data)
-        # picture_label.configure(image=selected_picture)
-        # stretch_result_window.mainloop()
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - rozciąganie od zakresu do zakresu({str(helper_index)})"
+        stretchResultWindow.title(img_title)
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+            stretchResultWindow.destroy()
+
+        stretchResultWindow.protocol("WM_DELETE_WINDOW", on_closing)
+        parent.allOpenImagesData[img_title] = list(parent.editedImageData[1])
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                        parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(parent.editedImageData[1])
+        picture_label = tk.Label(stretchResultWindow)
+        picture_label.pack()
+
+        parent.histogram_image_data = ["Stretched", parent.pilImageData.getdata()]
+        selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        picture_label.configure(image=selected_picture)
+        stretchResultWindow.mainloop()
 
 
 class Scaling(tk.Menu):
