@@ -358,6 +358,75 @@ class Lab2MenuDropdown(tk.Menu):
         picture_label.configure(image=selected_picture)
         stretchResultWindow.mainloop()
 
+    def equalizeImage(self, parent):
+        def calculateCumulativeDistribution(image_list):
+            cumulativeDistribution = {}
+            image_list_sorted = sorted(image_list)
+            for number in image_list:
+                if number in cumulativeDistribution.keys():
+                    continue
+                cumulativeDistribution[number] = countSmallerNumbers(number, image_list_sorted)
+            return cumulativeDistribution
+
+        def countSmallerNumbers(number, inp_list):
+            count = 0
+            for i in inp_list:
+                if i <= number:
+                    count += 1
+                else:
+                    return count
+            return count
+
+        cumulativeDistribution = calculateCumulativeDistribution(parent.loadedImageData[1])
+
+        # Lowest value from cumulative distribution other than 0
+        minCumulativeDistribution = min(list(filter(lambda x: x != 0, cumulativeDistribution.values())))
+
+        m = parent.loadedImageData[2].size[0]
+        n = parent.loadedImageData[2].size[1]
+
+        def calculateEqualizedValue(value):
+            return round(((cumulativeDistribution[value] - minCumulativeDistribution) / ((m * n) - minCumulativeDistribution)) * 255)
+
+        def createEqualizedImage(original):
+            result = []
+            for pixel in original:
+                result.append(calculateEqualizedValue(pixel))
+            return result
+
+        equalizedImage = createEqualizedImage(parent.loadedImageData[1])
+
+        equalizeResultWindow = tk.Toplevel(parent)
+        imgageTitle = "Obraz wynikowy - equalizacja"
+
+        helper_index = 0
+        while imgageTitle in parent.allOpenImagesData.keys():
+            helper_index += 1
+            imgageTitle = "Obraz wynikowy - equalizacja " + f"({str(helper_index)})"
+        equalizeResultWindow.title(imgageTitle)
+
+        def on_closing():
+            del parent.allOpenImagesData[imgageTitle]
+            equalizeResultWindow.destroy()
+
+        equalizeResultWindow.protocol("WM_DELETE_WINDOW", on_closing)
+
+        picture_label = tk.Label(equalizeResultWindow)
+        picture_label.pack()
+
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                          parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(equalizedImage)
+        parent.allOpenImagesData[imgageTitle] = parent.pilImageData
+
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                                  parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(equalizedImage)
+
+        selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
+        picture_label.configure(image=selectedPicture)
+        equalizeResultWindow.mainloop()
+
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -400,7 +469,8 @@ class MenuTopBar(tk.Menu):
         self.add_cascade(label="Lab2", menu=self.lab2menu)
         self.lab2menu.add_command(label="Rozciaganie histogramu",
                                   command=lambda: self.lab2MenuDropdown.strechHistogram(parent))
-        self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu")
+        self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu",
+                                  command=lambda: self.lab2MenuDropdown.equalizeImage(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
