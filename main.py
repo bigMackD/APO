@@ -200,10 +200,13 @@ class Lab1MenuDropdown(tk.Menu):
         img = parent.histogramData
         y_axis = [0 for i in range(256)]
         x_axis = [i for i in range(256)]
+
+        #get each channel
         red_channel = [i[0] for i in img[1]]
         green_channel = [i[1] for i in img[1]]
         blue_channel = [i[2] for i in img[1]]
 
+        #get each value
         def compute_values_count(channel_name):
             for value in channel_name:
                 luminence_value = int(value)
@@ -232,15 +235,14 @@ class Lab1MenuDropdown(tk.Menu):
     def createGreyscaleHistogram(self, parent, img=None):
         """
         Displays histogram for greyscale image.
-        img=None parameter allows to prevent certain issue
         """
         if parent.loadedImageType == 'gs3ch':
             # gets values of only first channel of greyscale 3 channel type image
             img = [parent.loadedImageData[1][i][0] for i in range(len(parent.loadedImageData[1]))]
         else:
-            img = parent.loadedImageData[1]  # list containing image luminence avlues
+            img = parent.loadedImageData[1]  # list containing image luminence values
 
-        # List with occurrences of each luminance value
+        # List with pixel occurrences of each luminance value
         values_count = [0 for i in range(256)]
         for value in img:
             values_count[value] += 1
@@ -257,6 +259,7 @@ class Lab2MenuDropdown(tk.Menu):
         tk.Menu.__init__(self, tearoff=False)
 
     def strechHistogram(self, parent):
+        #creating UI
         self.strechHistogramInputWindow = tk.Toplevel(parent)
         self.strechHistogramInputWindow.resizable(False, False)
         self.strechHistogramInputWindow.title("Rozciąganie histogramu")
@@ -495,6 +498,19 @@ class Lab2MenuDropdown(tk.Menu):
         entry.pack()
         button.pack()
 
+class Lab3MenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+    def addImages(self, parent):
+        """
+        Add the two images
+        """
+        for key, value in parent.allOpenImagesData.items():
+            test = value.getData();
+            bk = 1;
+
+
+
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
@@ -516,12 +532,14 @@ class MenuTopBar(tk.Menu):
         self.menu = tk.Menu(self, tearoff=0)
         self.lab1menu = tk.Menu(self, tearoff=0)
         self.lab2menu = tk.Menu(self, tearoff=0)
+        self.lab3menu = tk.Menu(self, tearoff=0)
         self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
 
         self.fileMenuDropdown = FileMenuDropdown()
         self.lab1MenuDropdown = Lab1MenuDropdown()
         self.lab2MenuDropdown = Lab2MenuDropdown()
+        self.lab3MenuDropdown = Lab3MenuDropdown()
         self.resizeDropdown = Scaling()
 
     def fill(self, parent: Program):
@@ -542,6 +560,11 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab2MenuDropdown.negateImage(parent))
         self.lab2menu.add_command(label="Progowanie obrazu",
                                   command=lambda: self.lab2MenuDropdown.thresholdImage(parent))
+
+        self.add_cascade(label="Lab3", menu=self.lab3menu)
+        self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
+                                  command=lambda: self.lab3MenuDropdown.addImages(parent)
+                                  )
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
