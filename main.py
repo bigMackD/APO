@@ -181,6 +181,8 @@ class Lab1MenuDropdown(tk.Menu):
         tk.Menu.__init__(self, tearoff=False)
 
     def showHistogram(self, parent):
+        plt.ion()
+
         if parent.loadedImageType == 'gs' or \
                 parent.loadedImageType == 'b' or \
                 parent.loadedImageType == 'gs3ch':
@@ -230,28 +232,30 @@ class Lab1MenuDropdown(tk.Menu):
         plt.bar(x_axis, y_axis)
         plt.title(f'Histogram - kanał niebieski - {img[0]}')  # Blue channel
 
-        plt.show()
+        # plt.show()
 
     def createGreyscaleHistogram(self, parent, img=None):
         """
         Displays histogram for greyscale image.
         """
+
         if parent.loadedImageType == 'gs3ch':
             # gets values of only first channel of greyscale 3 channel type image
-            img = [parent.loadedImageData[1][i][0] for i in range(len(parent.loadedImageData[1]))]
+            img = [parent.histogramData[1][i][0] for i in range(len(parent.histogramData[1]))]
         else:
-            img = parent.loadedImageData[1]  # list containing image luminence values
+            img = parent.histogramData[1]  # list containing image luminence values
 
         # List with pixel occurrences of each luminance value
         values_count = [0 for i in range(256)]
         for value in img:
-            values_count[value] += 1
-
+            values_count[int(value)] += 1
         x_axis = list([i for i in range(256)])
         y_axis = values_count
-        plt.title(f"Histogram - {parent.loadedImageData[0]}")
+
+        plt.title(f"Histogram - {parent.histogramData[0]}")
         plt.bar(x_axis, y_axis)
         plt.show()
+
 
 
 class Lab2MenuDropdown(tk.Menu):
@@ -360,6 +364,7 @@ class Lab2MenuDropdown(tk.Menu):
 
         parent.histogram_image_data = ["Stretched", parent.pilImageData.getdata()]
         selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        parent.histogramData = ["Rozciaganie histogramu - ", parent.pilImageData.getdata()]
         picture_label.configure(image=selected_picture)
         stretchResultWindow.mainloop()
 
@@ -429,7 +434,7 @@ class Lab2MenuDropdown(tk.Menu):
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
                                                   parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(equalizedImage)
-
+        parent.histogramData = ["Equalizacja - ", parent.pilImageData.getdata()]
         selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
         picture_label.configure(image=selectedPicture)
         equalizeResultWindow.mainloop()
@@ -475,7 +480,7 @@ class Lab2MenuDropdown(tk.Menu):
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
                                                   parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(imageNegated)
-
+        parent.histogramData = ["Negacja - ", parent.pilImageData.getdata()]
         selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
         pictureLabel.configure(image=selectedPicture)
         negateResultWindow.mainloop()
