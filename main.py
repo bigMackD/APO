@@ -203,12 +203,12 @@ class Lab1MenuDropdown(tk.Menu):
         y_axis = [0 for i in range(256)]
         x_axis = [i for i in range(256)]
 
-        #get each channel
+        # get each channel
         red_channel = [i[0] for i in img[1]]
         green_channel = [i[1] for i in img[1]]
         blue_channel = [i[2] for i in img[1]]
 
-        #get each value
+        # get each value
         def compute_values_count(channel_name):
             for value in channel_name:
                 luminence_value = int(value)
@@ -232,7 +232,7 @@ class Lab1MenuDropdown(tk.Menu):
         plt.bar(x_axis, y_axis)
         plt.title(f'Histogram - kanał niebieski - {img[0]}')  # Blue channel
 
-        # plt.show()
+        plt.show()
 
     def createGreyscaleHistogram(self, parent, img=None):
         """
@@ -257,13 +257,76 @@ class Lab1MenuDropdown(tk.Menu):
         plt.show()
 
 
-
 class Lab2MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
-    def strechHistogram(self, parent):
-        #creating UI
+    def stretchHistogram(self, parent):
+        """
+        Stretches the histogram to max range (to 0-255)
+        """
+        self.stretchHistogramCalculations(parent, 0, 255)
+
+    def stretchHistogramCalculations(self, parent, l_min, l_max):
+        values_count = [0 for i in range(256)]
+        for value in parent.loadedImageData[1]:
+            values_count[value] += 1
+
+        for index, number in enumerate(values_count):
+            if number:
+                first_nonzero_index = index
+                break
+        for index, number in enumerate(values_count[::-1]):
+            if number:
+                first_nonzero_index_reverse = 255 - index
+                break
+
+        for index in range(len(parent.edited_image_data[1])):
+            if parent.editedImageData[1][index] < l_min:
+                parent.editedImageData[1][index] = l_min
+            if parent.editedImageData[1][index] > l_max:
+                parent.editedImageData[1][index] = l_max
+            else:
+                parent.editedImageData[1][index] = \
+                    ((parent.editedImageData[1][index] - first_nonzero_index) * l_max) / \
+                    (first_nonzero_index_reverse - first_nonzero_index)
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                               parent.loadedImageData[2].size)
+
+        parent.editedImageData = list(parent.editedImageData)
+        parent.saveHelperImageData.putdata(tuple(parent.editedImageData[1]))
+        self.histogram_stretch_result_window(parent)
+
+    def histogram_stretch_result_window(self, parent):
+        stretch_result_window = tk.Toplevel(parent)
+        img_title = "Obraz wynikowy - rozciąganie"
+
+        helper_index = 0
+        while img_title in parent.all_open_image_data.keys():
+            helper_index += 1
+            img_title = "Obraz wynikowy - rozciąganie " + f"({str(helper_index)})"
+        stretch_result_window.title(img_title)
+
+        def on_closing():
+            del parent.all_open_image_data[img_title]
+            stretch_result_window.destroy()
+
+        stretch_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        parent.pil_image_data = Image.new(parent.loaded_image_mode,
+                                          parent.loaded_image_data[2].size)
+        parent.pil_image_data.putdata(parent.edited_image_data[1])
+        parent.all_open_image_data[img_title] = parent.pil_image_data
+        picture_label = tk.Label(stretch_result_window)
+        picture_label.pack()
+
+        parent.histogram_image_data = ["Stretched", parent.pil_image_data.getdata()]
+        selected_picture = ImageTk.PhotoImage(parent.pil_image_data)
+        picture_label.configure(image=selected_picture)
+        stretch_result_window.mainloop()
+
+    def stretchHistogramFromTo(self, parent):
+        # creating UI
         self.strechHistogramInputWindow = tk.Toplevel(parent)
         self.strechHistogramInputWindow.resizable(False, False)
         self.strechHistogramInputWindow.title("Rozciąganie histogramu")
@@ -284,11 +347,11 @@ class Lab2MenuDropdown(tk.Menu):
 
         button_area = tk.Frame(self.strechHistogramInputWindow, width=100, pady=10)
         button = tk.Button(button_area, text="Wykonaj", width=10,
-                           command=lambda: self.calculateHistogramStretch(parent,
-                                                                          fromMinInput.get(),
-                                                                          fromMaxInput.get(),
-                                                                          toMinInput.get(),
-                                                                          toMaxInput.get()))
+                           command=lambda: self.calculateHistogramStretchFromTo(parent,
+                                                                                fromMinInput.get(),
+                                                                                fromMaxInput.get(),
+                                                                                toMinInput.get(),
+                                                                                toMaxInput.get()))
 
         button.pack()
         stretchSettingsBox.grid(column=0, row=0)
@@ -303,7 +366,7 @@ class Lab2MenuDropdown(tk.Menu):
         toMaxInput.grid(column=4, row=1, padx=(5, 20))
         button_area.grid(column=0, row=1)
 
-    def calculateHistogramStretch(self, parent, from_min, from_max, to_min, to_max):
+    def calculateHistogramStretchFromTo(self, parent, from_min, from_max, to_min, to_max):
         try:
             int(from_min)
             int(from_max)
@@ -322,9 +385,9 @@ class Lab2MenuDropdown(tk.Menu):
         to_max = int(to_max)
         values_count = [0 for i in range(256)]
 
-        #iterate over each pixel and apply cdf
+        # iterate over each pixel and apply cdf
         for value in parent.loadedImageData[1]:
-            values_count[value] += 1
+            values_count[int(value)] += 1
         for index in range(len(parent.editedImageData[1])):
             if parent.editedImageData[1][index] < from_min:
                 parent.editedImageData[1][index] = from_min
@@ -337,9 +400,9 @@ class Lab2MenuDropdown(tk.Menu):
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
                                                parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(parent.editedImageData[1])
-        self.hisogramStrechResultWindow(parent)
+        self.histogramStrechFromToResultWindow(parent)
 
-    def hisogramStrechResultWindow(self, parent):
+    def histogramStrechFromToResultWindow(self, parent):
         self.strechHistogramInputWindow.destroy()
         stretchResultWindow = tk.Toplevel()
         img_title = "Obraz wynikowy - rozciąganie od zakresu do zakresu"
@@ -369,7 +432,7 @@ class Lab2MenuDropdown(tk.Menu):
         stretchResultWindow.mainloop()
 
     def equalizeImage(self, parent):
-        #get cdf
+        # get cdf
         def calculateCumulativeDistribution(image_list):
             cumulativeDistribution = {}
             image_list_sorted = sorted(image_list)
@@ -397,9 +460,10 @@ class Lab2MenuDropdown(tk.Menu):
         n = parent.loadedImageData[2].size[1]
 
         def calculateEqualizedValue(value):
-            return round(((cumulativeDistribution[value] - minCumulativeDistribution) / ((m * n) - minCumulativeDistribution)) * 255)
+            return round(((cumulativeDistribution[value] - minCumulativeDistribution) / (
+                        (m * n) - minCumulativeDistribution)) * 255)
 
-        #appends cdf to each pixel
+        # appends cdf to each pixel
         def createEqualizedImage(original):
             result = []
             for pixel in original:
@@ -427,12 +491,12 @@ class Lab2MenuDropdown(tk.Menu):
         picture_label.pack()
 
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(equalizedImage)
         parent.allOpenImagesData[imgageTitle] = parent.pilImageData
 
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(equalizedImage)
         parent.histogramData = ["Equalizacja - ", parent.pilImageData.getdata()]
         selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
@@ -445,14 +509,14 @@ class Lab2MenuDropdown(tk.Menu):
         maxPixelValue = parent.loadedImageData[1][0]
         imageNegated = list(parent.loadedImageData[1])
 
-        #Get min and max pixel values
+        # Get min and max pixel values
         for pixel in parent.loadedImageData[1]:
             if pixel > maxPixelValue:
                 maxPixelValue = pixel
             if pixel < minPixelValue:
                 minPixelValue = pixel
 
-        #Iterate and negate each pixel
+        # Iterate and negate each pixel
         for index in range(len(parent.loadedImageData[1])):
             imageNegated[index] = maxPixelValue - parent.loadedImageData[1][index]
 
@@ -474,11 +538,11 @@ class Lab2MenuDropdown(tk.Menu):
         pictureLabel = tk.Label(negateResultWindow)
         pictureLabel.pack()
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(imageNegated)
         parent.allOpenImagesData[imageTitle] = parent.pilImageData
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(imageNegated)
         parent.histogramData = ["Negacja - ", parent.pilImageData.getdata()]
         selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
@@ -503,9 +567,76 @@ class Lab2MenuDropdown(tk.Menu):
         entry.pack()
         button.pack()
 
+    def stretchHistogram(self, parent):
+        """
+        Stretches the histogram to max range (to 0-255)
+        """
+        self.histogramStretchCalculations(parent, 0, 255)
+
+    def histogramStretchCalculations(self, parent, l_min, l_max):
+        values_count = [0 for i in range(256)]
+        for value in parent.loadedImageData[1]:
+            values_count[value] += 1
+
+        for index, number in enumerate(values_count):
+            if number:
+                first_nonzero_index = index
+                break
+        for index, number in enumerate(values_count[::-1]):
+            if number:
+                first_nonzero_index_reverse = 255 - index
+                break
+
+        for index in range(len(parent.editedImageData[1])):
+            if parent.editedImageData[1][index] < l_min:
+                parent.editedImageData[1][index] = l_min
+            if parent.editedImageData[1][index] > l_max:
+                parent.editedImageData[1][index] = l_max
+            else:
+                parent.editedImageData[1][index] = \
+                    ((parent.editedImageData[1][index] - first_nonzero_index) * l_max) / \
+                    (first_nonzero_index_reverse - first_nonzero_index)
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                                  parent.loadedImageData[2].size)
+
+        parent.editedImageData = list(parent.editedImageData)
+        parent.saveHelperImageData.putdata(tuple(parent.editedImageData[1]))
+        self.histogramStretchResultWindow(parent)
+
+    def histogramStretchResultWindow(self, parent):
+        stretchResultsWindow = tk.Toplevel(parent)
+        imageTitle = "Obraz wynikowy - rozciąganie"
+
+        helper_index = 0
+        while imageTitle in parent.allOpenImagesData.keys():
+            helper_index += 1
+            imageTitle = "Obraz wynikowy - rozciąganie " + f"({str(helper_index)})"
+        stretchResultsWindow.title(imageTitle)
+
+        def on_closing():
+            del parent.allOpenImagesData[imageTitle]
+            stretchResultsWindow.destroy()
+
+        stretchResultsWindow.protocol("WM_DELETE_WINDOW", on_closing)
+
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                          parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(parent.editedImageData[1])
+        parent.allOpenImagesData[imageTitle] = parent.pilImageData
+        pictureLabel = tk.Label(stretchResultsWindow)
+        pictureLabel.pack()
+
+        parent.histogram_image_data = ["Stretched", parent.pilImageData.getdata()]
+        selectedPicture = ImageTk.PhotoImage(parent.pilImageData)
+        parent.histogramData = ["Rozciaganie - ", parent.pilImageData.getdata()]
+        pictureLabel.configure(image=selectedPicture)
+        stretchResultsWindow.mainloop()
+
+
 class Lab3MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
+
     def addImages(self, parent):
         """
         Add the two images
@@ -513,7 +644,6 @@ class Lab3MenuDropdown(tk.Menu):
         for key, value in parent.allOpenImagesData.items():
             test = value.getData();
             bk = 1;
-
 
 
 class Scaling(tk.Menu):
@@ -558,7 +688,9 @@ class MenuTopBar(tk.Menu):
 
         self.add_cascade(label="Lab2", menu=self.lab2menu)
         self.lab2menu.add_command(label="Rozciaganie histogramu",
-                                  command=lambda: self.lab2MenuDropdown.strechHistogram(parent))
+                                  command=lambda: self.lab2MenuDropdown.stretchHistogram(parent))
+        self.lab2menu.add_command(label="Rozciaganie histogramu w zakresie",
+                                  command=lambda: self.lab2MenuDropdown.stretchHistogramFromTo(parent))
         self.lab2menu.add_command(label="Wyrownywanie przez eq histogramu",
                                   command=lambda: self.lab2MenuDropdown.equalizeImage(parent))
         self.lab2menu.add_command(label="Negacja obrazu",
