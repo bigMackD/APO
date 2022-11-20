@@ -616,6 +616,224 @@ class Lab2MenuDropdown(tk.Menu):
         parent.histogramData = ["Progowanie - ", parent.pilImageData.getdata()]
         thresholdImageWindow.mainloop()
 
+    def thresholdImageWithGreyscale(self, parent):
+        self.thresholdGreyscaleImageSettings = tk.Toplevel(parent)
+        self.thresholdGreyscaleImageSettings.title("Ustawienia progowania z zachowaniem progow szarosci")
+        self.thresholdGreyscaleImageSettings.resizable(False, False)
+        self.thresholdGreyscaleImageSettings.geometry("300x80")
+        self.thresholdGreyscaleImageSettings.focus_set()
+
+        label = tk.Label(self.thresholdGreyscaleImageSettings, text="Próg (od 1 do 255)", justify=tk.LEFT, anchor='w')
+
+        entry = tk.Entry(self.thresholdGreyscaleImageSettings, width=10)
+        entry.insert(0, "1")
+        button = tk.Button(self.thresholdGreyscaleImageSettings, text="Wykonaj", width=10,
+                           command=lambda: self.thresholdImageWithGreyscaleCalculations(parent, entry.get()))
+
+        label.pack()
+        entry.pack()
+        button.pack()
+
+    def thresholdImageWithGreyscaleCalculations(self, parent, value):
+        try:
+            int(value)
+        except ValueError:
+            print("Wpisana wartosc musi byc liczba")
+            return
+        if not (0 < int(value) < 255):
+            print("Wartosc poza zakresem 0-255")
+            return
+        value = int(value)
+        imageThresholdedWithGreyscale = list(parent.loadedImageData[1])
+        self.thresholdGreyscaleImageSettings.destroy()
+        for index in range(len(parent.loadedImageData[1])):
+            if parent.loadedImageData[1][index] > value:
+                imageThresholdedWithGreyscale[index] = imageThresholdedWithGreyscale[index]
+            else:
+                imageThresholdedWithGreyscale[index] = 0
+
+        thresholdImageWithGreyscaleWindow = tk.Toplevel()
+        imageTitle = "Obraz wynikowy - progowanie"
+
+        helper_index = 0
+        while imageTitle in parent.allOpenImagesData.keys():
+            helper_index += 1
+            imageTitle = f"Obraz wynikowy - progowanie z zachowaniem szarosci({str(helper_index)})"
+        thresholdImageWithGreyscaleWindow.title(imageTitle)
+
+        def on_closing():
+            del parent.allOpenImagesData[imageTitle]
+            thresholdImageWithGreyscaleWindow.destroy()
+
+        thresholdImageWithGreyscaleWindow.protocol("WM_DELETE_WINDOW", on_closing)
+
+        imageLabel = tk.Label(thresholdImageWithGreyscaleWindow)
+        imageLabel.pack()
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                        parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(imageThresholdedWithGreyscale)
+        parent.allOpenImagesData[imageTitle] = parent.pilImageData
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                               parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(imageThresholdedWithGreyscale)
+
+        selectedImage = ImageTk.PhotoImage(parent.pilImageData)
+        imageLabel.configure(image=selectedImage)
+        parent.histogramData = ["Progowanie z zachowaniem poziomu szarosci- ", parent.pilImageData.getdata()]
+        thresholdImageWithGreyscaleWindow.mainloop()
+
+    def imageThresholdWithTwoValues(self, parent):
+        # Set threshold level window
+        self.thresholdWithLevelMenu = tk.Toplevel(parent)
+        self.thresholdWithLevelMenu.resizable(False, False)
+        self.thresholdWithLevelMenu.title("Thresholding settings")
+        self.thresholdWithLevelMenu.focus_set()
+
+        stretch_options_top = tk.Frame(self.thresholdWithLevelMenu, width=150, height=150)
+        floorLevellabel = tk.Label(stretch_options_top, text="Próg dolny", padx=10, pady=10)
+        cellingLevelLabel = tk.Label(stretch_options_top, text="Próg górny", padx=10, pady=10)
+        floorLevelValue = tk.Entry(stretch_options_top, width=10)
+        cellingLevelValue = tk.Entry(stretch_options_top, width=10)
+
+        button_area = tk.Frame(self.thresholdWithLevelMenu, width=100, pady=10)
+        button = tk.Button(button_area, text="Wykonaj", width=10,
+                           command=lambda: self.imageThresholdWithTwoValuesCalculations(parent, floorLevelValue.get(),
+                                                                                    cellingLevelValue.get()))
+        button.pack()
+
+        stretch_options_top.grid(column=1, row=0)
+        floorLevellabel.grid(column=1, row=1, padx=(55, 5))
+        cellingLevelLabel.grid(column=2, row=1, padx=(5, 55))
+        floorLevelValue.grid(column=1, row=2, padx=(55, 5))
+        cellingLevelValue.grid(column=2, row=2, padx=(5, 55))
+        button_area.grid(column=1, row=1)
+
+    def imageThresholdWithTwoValuesCalculations(self, parent, floorValue, cellingValue):
+        try:
+            int(floorValue)
+            int(cellingValue)
+        except ValueError:
+            print("Wpisana wartosc musi by numerem.")
+            return
+        if not (0 < int(floorValue) < 255) or not (0 < int(cellingValue) < 255):
+            print("Wartosc poza zakresem 0-255")
+            return
+        floorValue = int(floorValue)
+        cellingValue = int(cellingValue)
+        self.thresholdWithLevelMenu.destroy()
+        image_thresholded = list(parent.loadedImageData[1])
+
+        for index in range(len(parent.loadedImageData[1])):
+            if parent.loadedImageData[1][index] >= cellingValue:
+                image_thresholded[index] = 255
+            elif parent.loadedImageData[1][index] <= floorValue:
+                image_thresholded[index] = 0
+
+        threshold_with_level_result_window = tk.Toplevel()
+        img_title = "Obraz wynikowy - progowanie z zakresem"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - progowanie z zakresem({str(helper_index)})"
+        threshold_with_level_result_window.title(img_title)
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+            threshold_with_level_result_window.destroy()
+
+        threshold_with_level_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        picture_label = tk.Label(threshold_with_level_result_window)
+        picture_label.pack()
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                          parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(image_thresholded)
+        parent.allOpenImagesData[img_title] = parent.pilImageData
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                                  parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(image_thresholded)
+        parent.histogramData = ["Progowanie z dwoma progami - ", parent.pilImageData.getdata()]
+        selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        picture_label.configure(image=selected_picture)
+        threshold_with_level_result_window.mainloop()
+
+    def imageThresholdWithTwoValuesGreyscaleLevel(self, parent):
+        # Set threshold level window
+        self.thresholdWithLevelMenu = tk.Toplevel(parent)
+        self.thresholdWithLevelMenu.resizable(False, False)
+        self.thresholdWithLevelMenu.title("Thresholding settings")
+        self.thresholdWithLevelMenu.focus_set()
+
+        stretch_options_top = tk.Frame(self.thresholdWithLevelMenu, width=150, height=150)
+        floorLevellabel = tk.Label(stretch_options_top, text="Próg dolny", padx=10, pady=10)
+        cellingLevelLabel = tk.Label(stretch_options_top, text="Próg górny", padx=10, pady=10)
+        floorLevelValue = tk.Entry(stretch_options_top, width=10)
+        cellingLevelValue = tk.Entry(stretch_options_top, width=10)
+
+        button_area = tk.Frame(self.thresholdWithLevelMenu, width=100, pady=10)
+        button = tk.Button(button_area, text="Wykonaj", width=10,
+                           command=lambda: self.imageThresholdWithTwoValuesGreyscaleLevelCalculations(parent, floorLevelValue.get(),
+                                                                                    cellingLevelValue.get()))
+        button.pack()
+
+        stretch_options_top.grid(column=1, row=0)
+        floorLevellabel.grid(column=1, row=1, padx=(55, 5))
+        cellingLevelLabel.grid(column=2, row=1, padx=(5, 55))
+        floorLevelValue.grid(column=1, row=2, padx=(55, 5))
+        cellingLevelValue.grid(column=2, row=2, padx=(5, 55))
+        button_area.grid(column=1, row=1)
+
+    def imageThresholdWithTwoValuesGreyscaleLevelCalculations(self, parent, floorValue, cellingValue):
+        try:
+            int(floorValue)
+            int(cellingValue)
+        except ValueError:
+            print("Wpisana wartosc musi by numerem.")
+            return
+        if not (0 < int(floorValue) < 255) or not (0 < int(cellingValue) < 255):
+            print("Wartosc poza zakresem 0-255")
+            return
+        floorValue = int(floorValue)
+        cellingValue = int(cellingValue)
+        self.thresholdWithLevelMenu.destroy()
+        image_thresholded = list(parent.loadedImageData[1])
+
+        for index in range(len(parent.loadedImageData[1])):
+            if parent.loadedImageData[1][index] >= cellingValue:
+                image_thresholded[index] = image_thresholded[index]
+            elif parent.loadedImageData[1][index] <= floorValue:
+                image_thresholded[index] = 0
+
+        threshold_with_level_result_window = tk.Toplevel()
+        img_title = "Obraz wynikowy - progowanie z zakresem z poziomem szarosci"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - progowanie z zakresem z poziomem szarosci({str(helper_index)})"
+        threshold_with_level_result_window.title(img_title)
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+            threshold_with_level_result_window.destroy()
+
+        threshold_with_level_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        picture_label = tk.Label(threshold_with_level_result_window)
+        picture_label.pack()
+        parent.pilImageData = Image.new(parent.loadedImageMode,
+                                          parent.loadedImageData[2].size)
+        parent.pilImageData.putdata(image_thresholded)
+        parent.allOpenImagesData[img_title] = parent.pilImageData
+        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+                                                  parent.loadedImageData[2].size)
+        parent.saveHelperImageData.putdata(image_thresholded)
+        parent.histogramData = ["Progowanie z dwoma progami - ", parent.pilImageData.getdata()]
+        selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        picture_label.configure(image=selected_picture)
+        threshold_with_level_result_window.mainloop()
+
     def stretchHistogram(self, parent):
         """
         Stretches the histogram to max range (to 0-255)
@@ -837,6 +1055,13 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab2MenuDropdown.negateImage(parent))
         self.lab2menu.add_command(label="Progowanie obrazu",
                                   command=lambda: self.lab2MenuDropdown.thresholdImage(parent))
+        self.lab2menu.add_command(label="Progowanie obrazu z zachowaniem szarosci",
+                                  command=lambda: self.lab2MenuDropdown.thresholdImageWithGreyscale(parent))
+        self.lab2menu.add_command(label="Progowanie 2 progami",
+                                 command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValues(parent))
+
+        self.lab2menu.add_command(label="Progowanie 2 progami z zachowaniem szarosci",
+                                  command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValuesGreyscaleLevel(parent))
 
         self.add_cascade(label="Lab3", menu=self.lab3menu)
         self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
