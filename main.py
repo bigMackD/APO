@@ -939,12 +939,6 @@ class Lab3MenuDropdown(tk.Menu):
                                image1Dropdown.get(),
                                image2Dropdown.get()))
 
-        # test = parent.allOpenImagesData[image1Dropdown.get()]
-        # image1Width = numpy.array(parent.allOpenImagesData[image1Dropdown.get()]).shape[1]
-        # image2Width = numpy.array(parent.allOpenImagesData[image2Dropdown.get()]).shape[1]
-        #
-        # if image1Width != image2Width:
-        # tkinter.messagebox.showerror("elo", "error")
         button.pack()
         mathAddSettings.grid(column=0, row=0)
         image1Label.grid(column=0, row=0, padx=(25, 5))
@@ -954,16 +948,24 @@ class Lab3MenuDropdown(tk.Menu):
         buttonArea.grid(column=0, row=1)
 
     def mathAddCommand(self, parent, img_one, img_two):
-        parent.editedImageData[1] = self.mathAddCalculations(parent, img_one, img_two)
-        self.math_add_result_window(parent, img_one)
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+
+        if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
+            tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
+        else:
+            parent.editedImageData[1] = self.mathAddCalculations(parent, img_one, img_two)
+            self.math_add_result_window(parent, img_one)
 
     def mathAddCalculations(self, parent, img_one, img_two):
         firstImage = numpy.array(parent.allOpenImagesData[img_one])
         secondImage = numpy.array(parent.allOpenImagesData[img_two])
-        # secondImage = cv2.resize(second_arg, (firstImage.shape[1], firstImage.shape[0]))
+
         addedImagesData = firstImage
-        for index in range(len(firstImage)):
-            addedImagesData[index] = (firstImage[index] + secondImage[index])
+        for i in range(len(firstImage)):
+            for j in range(len(firstImage[i])):
+                addedImagesData[i][j] = (firstImage[i][j] + secondImage[i][j])
+
         result = Image.fromarray(addedImagesData).getdata()
         return result
 
