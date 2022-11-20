@@ -721,12 +721,12 @@ class Lab3MenuDropdown(tk.Menu):
                                image1Dropdown.get(),
                                image2Dropdown.get()))
 
-        test = parent.allOpenImagesData[image1Dropdown.get()]
+        # test = parent.allOpenImagesData[image1Dropdown.get()]
         # image1Width = numpy.array(parent.allOpenImagesData[image1Dropdown.get()]).shape[1]
         # image2Width = numpy.array(parent.allOpenImagesData[image2Dropdown.get()]).shape[1]
         #
         # if image1Width != image2Width:
-        #     tk.messagebox.showinfo("showinfo", "elo kurwa")
+        # tkinter.messagebox.showerror("elo", "error")
         button.pack()
         mathAddSettings.grid(column=0, row=0)
         image1Label.grid(column=0, row=0, padx=(25, 5))
@@ -776,6 +776,13 @@ class Lab3MenuDropdown(tk.Menu):
         picture_label.configure(image=selected_picture)
         math_add_result_window.mainloop()
 
+class Lab4MenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+
+
+
+
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
@@ -798,6 +805,7 @@ class MenuTopBar(tk.Menu):
         self.lab1menu = tk.Menu(self, tearoff=0)
         self.lab2menu = tk.Menu(self, tearoff=0)
         self.lab3menu = tk.Menu(self, tearoff=0)
+        self.lab4menu = tk.Menu(self, tearoff=0)
         self.lab3menuMathCascade = tk.Menu(self.lab3menu, tearoff=0)
         self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
@@ -806,6 +814,7 @@ class MenuTopBar(tk.Menu):
         self.lab1MenuDropdown = Lab1MenuDropdown()
         self.lab2MenuDropdown = Lab2MenuDropdown()
         self.lab3MenuDropdown = Lab3MenuDropdown()
+        self.lab4MenuDropdown = Lab4MenuDropdown()
         self.resizeDropdown = Scaling()
 
     def fill(self, parent: Program):
@@ -844,6 +853,11 @@ class MenuTopBar(tk.Menu):
                                                  command=lambda: self.lab3MenuDropdown.math_not(parent))
         self.lab3menuMathCascade.add_command(label="XOR",
                                                  command=lambda: self.lab3MenuDropdown.math_xor(parent))
+
+        self.add_cascade(label="Lab4", menu=self.lab4menu)
+        self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
+                                  # command=lambda: self.lab3MenuDropdown.addImages(parent)
+                                  )
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
