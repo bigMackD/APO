@@ -961,7 +961,9 @@ class Lab3MenuDropdown(tk.Menu):
         firstImage = numpy.array(parent.allOpenImagesData[img_one])
         secondImage = numpy.array(parent.allOpenImagesData[img_two])
         # secondImage = cv2.resize(second_arg, (firstImage.shape[1], firstImage.shape[0]))
-        addedImagesData = numpy.add(firstImage, secondImage)
+        addedImagesData = firstImage
+        for index in range(len(firstImage)):
+            addedImagesData[index] = (firstImage[index] + secondImage[index])
         result = Image.fromarray(addedImagesData).getdata()
         return result
 
