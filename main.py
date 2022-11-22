@@ -29,8 +29,6 @@ class Program(tk.Tk):
         self.resize_width = 500
         self.resize_height = 500
 
-        # self.loaded_image_mode = None  # Can be RGB for colour images or L for greyscale
-        #
         self.loadedImageData = []  # Original image(from load_image method) [path, editable_tada, tuple(PIL_DATA)
         self.loadedImageType = None  # Can be b, gs, gs3ch, c; binary, greyscale, greyscale 3 channels, colour
         self.loadedImageMode = None  # Can be RGB for colour images or L for greyscale
@@ -87,7 +85,7 @@ class FileMenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
-    def loadImage(self, parent):
+    def loadImage(self, parent, type):
         """
         Opens selected image in separate window
         """
@@ -103,9 +101,10 @@ class FileMenuDropdown(tk.Menu):
                 helper_index += 1
                 title = f"Obraz pierwotny ({str(helper_index)}) - {os.path.basename(imagePath)}"
             window.title(title)
-            parent.cvImage = cv2.imread(imagePath, cv2.IMREAD_UNCHANGED)
+            parent.cvImage = cv2.imread(imagePath, type)
+            test = parent.cvImage[1, 1]
             load = Image.open(imagePath)
-            load.convert("L")
+            # load.convert("L")
 
             if isinstance(list(Image.fromarray(parent.cvImage).getdata())[0], tuple):
                 helper = list(Image.fromarray(parent.cvImage).getdata())
@@ -120,7 +119,8 @@ class FileMenuDropdown(tk.Menu):
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
             parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
             parent.editedImageData = [parent.loadedImageData[0], parent.loadedImageData[1]]
-            parent.allOpenImagesData[title] = Image.open(imagePath)
+            # parent.allOpenImagesData[title] = Image.open(imagePath)
+            parent.allOpenImagesData[title] = cv2.imread(imagePath, type)
             picture_label = tk.Label(window)
             picture_label.configure(image=render)
             picture_label.pack()
@@ -240,11 +240,11 @@ class Lab1MenuDropdown(tk.Menu):
         Displays histogram for greyscale image.
         """
 
-        if parent.loadedImageType == 'gs3ch':
-            # gets values of only first channel of greyscale 3 channel type image
-            img = [parent.histogramData[1][i][0] for i in range(len(parent.histogramData[1]))]
-        else:
-            img = parent.histogramData[1]  # list containing image luminence values
+        # if parent.loadedImageType == 'gs3ch' or 'gs':
+        #     # gets values of only first channel of greyscale 3 channel type image
+        #     img = [parent.histogramData[1][i][0] for i in range(len(parent.histogramData[1]))]
+        # else:
+        img = parent.histogramData[1]  # list containing image luminence values
 
         # List with pixel occurrences of each luminance value
         values_count = [0 for i in range(256)]
@@ -291,11 +291,11 @@ class Lab2MenuDropdown(tk.Menu):
                 parent.editedImageData[1][index] = \
                     ((parent.editedImageData[1][index] - first_nonzero_index) * l_max) / \
                     (first_nonzero_index_reverse - first_nonzero_index)
-        parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                               parent.loadedImageData[2].size)
+        # parent.saveHelperImageData = Image.new(parent.loadedImageMode,
+        #                                        parent.loadedImageData[2].size)
 
         parent.editedImageData = list(parent.editedImageData)
-        parent.saveHelperImageData.putdata(tuple(parent.editedImageData[1]))
+        # parent.saveHelperImageData.putdata(tuple(parent.editedImageData[1]))
         self.histogram_stretch_result_window(parent)
 
     def histogram_stretch_result_window(self, parent):
@@ -960,43 +960,46 @@ class Lab3MenuDropdown(tk.Menu):
     def mathAddCalculations(self, parent, img_one, img_two):
         firstImage = numpy.array(parent.allOpenImagesData[img_one])
         secondImage = numpy.array(parent.allOpenImagesData[img_two])
-
         addedImagesData = firstImage
         for i in range(len(firstImage)):
             for j in range(len(firstImage[i])):
-                addedImagesData[i][j] = (firstImage[i][j] + secondImage[i][j])
+                test = firstImage[i, j]
+                test2 = secondImage[i, j]
+                addedImagesData[i][j] = (int(test) + int(test2))
 
-        result = Image.fromarray(addedImagesData).getdata()
-        return result
+        # result = Image.fromarray(addedImagesData).getdata()
+        # return result
+        return addedImagesData
 
     def math_add_result_window(self, parent, img_one):
         self.math_add_settings_window.destroy()
-        math_add_result_window = tk.Toplevel()
+        # math_add_result_window = tk.Toplevel()
         img_title = "Obraz wynikowy - dodawanie"
 
         helper_index = 0
         while img_title in parent.allOpenImagesData.keys():
             helper_index += 1
             img_title = f"Obraz wynikowy - dodawanie({str(helper_index)})"
-        math_add_result_window.title(img_title)
+        # math_add_result_window.title(img_title)
 
         def on_closing():
             del parent.allOpenImagesData[img_title]
-            math_add_result_window.destroy()
+            # math_add_result_window.destroy()
 
-        math_add_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+        # math_add_result_window.protocol("WM_DELETE_WINDOW", on_closing)
 
-        parent.pilImageData = Image.new(parent.allOpenImagesData[img_one].mode,
-                                          parent.allOpenImagesData[img_one].size)
-        parent.pilImageData.putdata(parent.editedImageData[1])
-        parent.allOpenImagesData[img_title] = parent.pilImageData
-        picture_label = tk.Label(math_add_result_window)
-        picture_label.pack()
-
-        parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
-        selected_picture = ImageTk.PhotoImage(parent.pilImageData)
-        picture_label.configure(image=selected_picture)
-        math_add_result_window.mainloop()
+        # parent.pilImageData = Image.new(parent.allOpenImagesData[img_one].mode,
+        #                                   parent.allOpenImagesData[img_one].size)
+        # parent.pilImageData.putdata(parent.editedImageData[1])
+        # parent.allOpenImagesData[img_title] = parent.pilImageData
+        # picture_label = tk.Label(math_add_result_window)
+        # picture_label.pack()
+        #
+        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        # picture_label.configure(image=selected_picture)
+        cv2.imshow("test", parent.editedImageData[1])
+        # math_add_result_window.mainloop()
 
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
@@ -1041,7 +1044,8 @@ class MenuTopBar(tk.Menu):
 
     def fill(self, parent: Program):
         self.add_cascade(label="Plik", menu=self.menu)
-        self.menu.add_command(label="Otwórz", command=lambda: self.fileMenuDropdown.loadImage(parent))
+        self.menu.add_command(label="Otwórz", command=lambda: self.fileMenuDropdown.loadImage(parent, 0))
+        self.menu.add_command(label="Otwórz kolorowy", command=lambda: self.fileMenuDropdown.loadImage(parent, -1))
         self.menu.add_command(label="Zapisz", command=lambda: self.fileMenuDropdown.saveImage(parent))
         self.menu.add_command(label="Duplikuj", command=lambda: self.fileMenuDropdown.duplicateImage(parent))
 
@@ -1068,12 +1072,11 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValuesGreyscaleLevel(parent))
 
         self.add_cascade(label="Lab3", menu=self.lab3menu)
-        self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
-                                  command=lambda: self.lab3MenuDropdown.addImages(parent)
-                                  )
         self.lab3menu.add_cascade(label="Operacje matematyczne", menu=self.lab3menuMathCascade)
         self.lab3menuMathCascade.add_command(label="Dodawanie",
                                                  command=lambda: self.lab3MenuDropdown.mathAdd(parent))
+        self.lab3menuMathCascade.add_command(label="Dodawanie z wysyceniem",
+                                             command=lambda: self.lab3MenuDropdown.mathAdd(parent))
         self.lab3menuMathCascade.add_command(label="AND",
                                                  command=lambda: self.lab3MenuDropdown.math_and(parent))
         self.lab3menuMathCascade.add_command(label="OR",
