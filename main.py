@@ -315,7 +315,7 @@ class Lab2MenuDropdown(tk.Menu):
         stretch_result_window.protocol("WM_DELETE_WINDOW", on_closing)
 
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(parent.editedImageData[1])
         parent.allOpenImagesData[img_title] = parent.pilImageData
         picture_label = tk.Label(stretch_result_window)
@@ -462,7 +462,7 @@ class Lab2MenuDropdown(tk.Menu):
 
         def calculateEqualizedValue(value):
             return round(((cumulativeDistribution[value] - minCumulativeDistribution) / (
-                        (m * n) - minCumulativeDistribution)) * 255)
+                    (m * n) - minCumulativeDistribution)) * 255)
 
         # appends cdf to each pixel
         def createEqualizedImage(original):
@@ -604,11 +604,11 @@ class Lab2MenuDropdown(tk.Menu):
         imageLabel = tk.Label(thresholdImageWindow)
         imageLabel.pack()
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(imageThresholded)
         parent.allOpenImagesData[imageTitle] = parent.pilImageData
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(imageThresholded)
 
         selectedImage = ImageTk.PhotoImage(parent.pilImageData)
@@ -698,7 +698,7 @@ class Lab2MenuDropdown(tk.Menu):
         button_area = tk.Frame(self.thresholdWithLevelMenu, width=100, pady=10)
         button = tk.Button(button_area, text="Wykonaj", width=10,
                            command=lambda: self.imageThresholdWithTwoValuesCalculations(parent, floorLevelValue.get(),
-                                                                                    cellingLevelValue.get()))
+                                                                                        cellingLevelValue.get()))
         button.pack()
 
         stretch_options_top.grid(column=1, row=0)
@@ -747,11 +747,11 @@ class Lab2MenuDropdown(tk.Menu):
         picture_label = tk.Label(threshold_with_level_result_window)
         picture_label.pack()
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(image_thresholded)
         parent.allOpenImagesData[img_title] = parent.pilImageData
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(image_thresholded)
         parent.histogramData = ["Progowanie z dwoma progami - ", parent.pilImageData.getdata()]
         selected_picture = ImageTk.PhotoImage(parent.pilImageData)
@@ -773,8 +773,9 @@ class Lab2MenuDropdown(tk.Menu):
 
         button_area = tk.Frame(self.thresholdWithLevelMenu, width=100, pady=10)
         button = tk.Button(button_area, text="Wykonaj", width=10,
-                           command=lambda: self.imageThresholdWithTwoValuesGreyscaleLevelCalculations(parent, floorLevelValue.get(),
-                                                                                    cellingLevelValue.get()))
+                           command=lambda: self.imageThresholdWithTwoValuesGreyscaleLevelCalculations(parent,
+                                                                                                      floorLevelValue.get(),
+                                                                                                      cellingLevelValue.get()))
         button.pack()
 
         stretch_options_top.grid(column=1, row=0)
@@ -823,11 +824,11 @@ class Lab2MenuDropdown(tk.Menu):
         picture_label = tk.Label(threshold_with_level_result_window)
         picture_label.pack()
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(image_thresholded)
         parent.allOpenImagesData[img_title] = parent.pilImageData
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
         parent.saveHelperImageData.putdata(image_thresholded)
         parent.histogramData = ["Progowanie z dwoma progami - ", parent.pilImageData.getdata()]
         selected_picture = ImageTk.PhotoImage(parent.pilImageData)
@@ -864,7 +865,7 @@ class Lab2MenuDropdown(tk.Menu):
                     ((parent.editedImageData[1][index] - first_nonzero_index) * l_max) / \
                     (first_nonzero_index_reverse - first_nonzero_index)
         parent.saveHelperImageData = Image.new(parent.loadedImageMode,
-                                                  parent.loadedImageData[2].size)
+                                               parent.loadedImageData[2].size)
 
         parent.editedImageData = list(parent.editedImageData)
         parent.saveHelperImageData.putdata(tuple(parent.editedImageData[1]))
@@ -887,7 +888,7 @@ class Lab2MenuDropdown(tk.Menu):
         stretchResultsWindow.protocol("WM_DELETE_WINDOW", on_closing)
 
         parent.pilImageData = Image.new(parent.loadedImageMode,
-                                          parent.loadedImageData[2].size)
+                                        parent.loadedImageData[2].size)
         parent.pilImageData.putdata(parent.editedImageData[1])
         parent.allOpenImagesData[imageTitle] = parent.pilImageData
         pictureLabel = tk.Label(stretchResultsWindow)
@@ -963,49 +964,377 @@ class Lab3MenuDropdown(tk.Menu):
         addedImagesData = firstImage
         for i in range(len(firstImage)):
             for j in range(len(firstImage[i])):
-                test = firstImage[i, j]
-                test2 = secondImage[i, j]
-                addedImagesData[i][j] = (int(test) + int(test2))
+                firstImagePixel = firstImage[i, j]
+                secondImagePixel = secondImage[i, j]
+                addedImagesData[i][j] = (int(firstImagePixel) + int(secondImagePixel))
 
-        # result = Image.fromarray(addedImagesData).getdata()
-        # return result
+        # result = Image.fromarray(list(addedImagesData)).getdata()
+        # parent.pilImageData = Image.new(parent.loadedImageMode,
+        #                                 parent.loadedImageData[2].size)
+        # parent.pilImageData.putdata(result, parent.loadedImageMode)
         return addedImagesData
 
     def math_add_result_window(self, parent, img_one):
         self.math_add_settings_window.destroy()
-        # math_add_result_window = tk.Toplevel()
         img_title = "Obraz wynikowy - dodawanie"
 
         helper_index = 0
         while img_title in parent.allOpenImagesData.keys():
             helper_index += 1
             img_title = f"Obraz wynikowy - dodawanie({str(helper_index)})"
-        # math_add_result_window.title(img_title)
 
         def on_closing():
             del parent.allOpenImagesData[img_title]
-            # math_add_result_window.destroy()
 
-        # math_add_result_window.protocol("WM_DELETE_WINDOW", on_closing)
-
-        # parent.pilImageData = Image.new(parent.allOpenImagesData[img_one].mode,
-        #                                   parent.allOpenImagesData[img_one].size)
-        # parent.pilImageData.putdata(parent.editedImageData[1])
-        # parent.allOpenImagesData[img_title] = parent.pilImageData
         # picture_label = tk.Label(math_add_result_window)
         # picture_label.pack()
         #
+
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
         cv2.imshow("test", parent.editedImageData[1])
         # math_add_result_window.mainloop()
 
+    def mathAnd(self, parent):
+        """
+        Add the two images
+        """
+        self.math_and_settings_window = tk.Toplevel(parent)
+        self.math_and_settings_window.resizable(False, False)
+        self.math_and_settings_window.title("And - wybierz obrazy")
+        self.math_and_settings_window.focus_set()
+
+        mathAndSettings = tk.Frame(self.math_and_settings_window, width=150, height=150)
+        openImages = [_ for _ in parent.allOpenImagesData.keys()]
+
+        image1Label = tk.Label(mathAndSettings, text="Obraz 1", padx=10)
+        image2Label = tk.Label(mathAndSettings, text="Obraz 2", padx=10)
+
+        image1Dropdown = ttk.Combobox(mathAndSettings, state='readonly', width=45)
+        image1Dropdown["values"] = openImages
+        image2Dropdown = ttk.Combobox(mathAndSettings, state='readonly', width=45)
+        image2Dropdown["values"] = openImages
+
+        buttonArea = tk.Frame(self.math_and_settings_window, width=100, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.mathAndCommand(
+                               parent,
+                               image1Dropdown.get(),
+                               image2Dropdown.get()))
+
+        button.pack()
+        mathAndSettings.grid(column=0, row=0)
+        image1Label.grid(column=0, row=0, padx=(25, 5))
+        image2Label.grid(column=1, row=0, padx=(5, 15))
+        image1Dropdown.grid(column=0, row=1, padx=(20, 5))
+        image2Dropdown.grid(column=1, row=1, padx=(5, 15))
+        buttonArea.grid(column=0, row=1)
+
+    def mathAndCommand(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+
+        if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
+            tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
+        else:
+            parent.editedImageData[1] = self.mathAndCalculations(parent, img_one, img_two)
+            self.math_add_result_window(parent, img_one)
+
+    def mathAndCalculations(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+        andImagesData = firstImage
+        for i in range(len(firstImage)):
+            for j in range(len(firstImage[i])):
+                firstImagePixel = firstImage[i, j]
+                secondImagePixel = secondImage[i, j]
+                andImagesData[i][j] = firstImagePixel & secondImagePixel
+
+        # result = Image.fromarray(list(addedImagesData)).getdata()
+        # parent.pilImageData = Image.new(parent.loadedImageMode,
+        #                                 parent.loadedImageData[2].size)
+        # parent.pilImageData.putdata(result, parent.loadedImageMode)
+        return andImagesData
+
+    def math_and_result_window(self, parent, img_one):
+        self.math_and_settings_window.destroy()
+        img_title = "Obraz wynikowy - and"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - and({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        # picture_label = tk.Label(math_add_result_window)
+        # picture_label.pack()
+        #
+
+        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        # picture_label.configure(image=selected_picture)
+        cv2.imshow("test", parent.editedImageData[1])
+
+        # math_add_result_window.mainloop()
+
+    def mathOr(self, parent):
+        """
+        Add the two images
+        """
+        self.math_or_settings_window = tk.Toplevel(parent)
+        self.math_or_settings_window.resizable(False, False)
+        self.math_or_settings_window.title("Or - wybierz obrazy")
+        self.math_or_settings_window.focus_set()
+
+        mathOrSettings = tk.Frame(self.math_or_settings_window, width=150, height=150)
+        openImages = [_ for _ in parent.allOpenImagesData.keys()]
+
+        image1Label = tk.Label(mathOrSettings, text="Obraz 1", padx=10)
+        image2Label = tk.Label(mathOrSettings, text="Obraz 2", padx=10)
+
+        image1Dropdown = ttk.Combobox(mathOrSettings, state='readonly', width=45)
+        image1Dropdown["values"] = openImages
+        image2Dropdown = ttk.Combobox(mathOrSettings, state='readonly', width=45)
+        image2Dropdown["values"] = openImages
+
+        buttonArea = tk.Frame(self.math_or_settings_window, width=100, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.mathOrCommand(
+                               parent,
+                               image1Dropdown.get(),
+                               image2Dropdown.get()))
+
+        button.pack()
+        mathOrSettings.grid(column=0, row=0)
+        image1Label.grid(column=0, row=0, padx=(25, 5))
+        image2Label.grid(column=1, row=0, padx=(5, 15))
+        image1Dropdown.grid(column=0, row=1, padx=(20, 5))
+        image2Dropdown.grid(column=1, row=1, padx=(5, 15))
+        buttonArea.grid(column=0, row=1)
+
+    def mathOrCommand(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+
+        if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
+            tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
+        else:
+            parent.editedImageData[1] = self.mathOrCalculations(parent, img_one, img_two)
+            self.math_or_result_window(parent, img_one)
+
+    def mathOrCalculations(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+        orImagesData = firstImage
+        for i in range(len(firstImage)):
+            for j in range(len(firstImage[i])):
+                firstImagePixel = firstImage[i, j]
+                secondImagePixel = secondImage[i, j]
+                orImagesData[i][j] = firstImagePixel & secondImagePixel
+
+        # result = Image.fromarray(list(addedImagesData)).getdata()
+        # parent.pilImageData = Image.new(parent.loadedImageMode,
+        #                                 parent.loadedImageData[2].size)
+        # parent.pilImageData.putdata(result, parent.loadedImageMode)
+        return orImagesData
+
+    def math_or_result_window(self, parent, img_one):
+        self.math_or_settings_window.destroy()
+        img_title = "Obraz wynikowy - or"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - or({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        # picture_label = tk.Label(math_add_result_window)
+        # picture_label.pack()
+        #
+
+        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        # picture_label.configure(image=selected_picture)
+        cv2.imshow("test", parent.editedImageData[1])
+
+        # math_add_result_window.mainloop()
+
+    def mathXor(self, parent):
+        """
+        Add the two images
+        """
+        self.math_xor_settings_window = tk.Toplevel(parent)
+        self.math_xor_settings_window.resizable(False, False)
+        self.math_xor_settings_window.title("Xor - wybierz obrazy")
+        self.math_xor_settings_window.focus_set()
+
+        mathXorSettings = tk.Frame(self.math_xor_settings_window, width=150, height=150)
+        openImages = [_ for _ in parent.allOpenImagesData.keys()]
+
+        image1Label = tk.Label(mathXorSettings, text="Obraz 1", padx=10)
+        image2Label = tk.Label(mathXorSettings, text="Obraz 2", padx=10)
+
+        image1Dropdown = ttk.Combobox(mathXorSettings, state='readonly', width=45)
+        image1Dropdown["values"] = openImages
+        image2Dropdown = ttk.Combobox(mathXorSettings, state='readonly', width=45)
+        image2Dropdown["values"] = openImages
+
+        buttonArea = tk.Frame(self.math_xor_settings_window, width=100, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.mathXorCommand(
+                               parent,
+                               image1Dropdown.get(),
+                               image2Dropdown.get()))
+
+        button.pack()
+        mathXorSettings.grid(column=0, row=0)
+        image1Label.grid(column=0, row=0, padx=(25, 5))
+        image2Label.grid(column=1, row=0, padx=(5, 15))
+        image1Dropdown.grid(column=0, row=1, padx=(20, 5))
+        image2Dropdown.grid(column=1, row=1, padx=(5, 15))
+        buttonArea.grid(column=0, row=1)
+
+    def mathXorCommand(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+
+        if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
+            tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
+        else:
+            parent.editedImageData[1] = self.mathXorCalculations(parent, img_one, img_two)
+            self.math_xor_result_window(parent, img_one)
+
+    def mathXorCalculations(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+        xorImagesData = firstImage
+        for i in range(len(firstImage)):
+            for j in range(len(firstImage[i])):
+                firstImagePixel = firstImage[i, j]
+                secondImagePixel = secondImage[i, j]
+                xorImagesData[i][j] = firstImagePixel ^ secondImagePixel
+
+        # result = Image.fromarray(list(addedImagesData)).getdata()
+        # parent.pilImageData = Image.new(parent.loadedImageMode,
+        #                                 parent.loadedImageData[2].size)
+        # parent.pilImageData.putdata(result, parent.loadedImageMode)
+        return xorImagesData
+
+    def math_xor_result_window(self, parent, img_one):
+        self.math_xor_settings_window.destroy()
+        img_title = "Obraz wynikowy - or"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - or({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        # picture_label = tk.Label(math_add_result_window)
+        # picture_label.pack()
+        #
+
+        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        # picture_label.configure(image=selected_picture)
+        cv2.imshow("test", parent.editedImageData[1])
+
+        # math_add_result_window.mainloop()
+
+    def mathNot(self, parent):
+        """
+        Add the two images
+        """
+        self.math_not_settings_window = tk.Toplevel(parent)
+        self.math_not_settings_window.resizable(False, False)
+        self.math_not_settings_window.title("Not - wybierz obrazy")
+        self.math_not_settings_window.focus_set()
+
+        mathXorSettings = tk.Frame(self.math_not_settings_window, width=150, height=150)
+        openImages = [_ for _ in parent.allOpenImagesData.keys()]
+
+        image1Label = tk.Label(mathXorSettings, text="Obraz 1", padx=10)
+        image2Label = tk.Label(mathXorSettings, text="Obraz 2", padx=10)
+
+        image1Dropdown = ttk.Combobox(mathXorSettings, state='readonly', width=45)
+        image1Dropdown["values"] = openImages
+        image2Dropdown = ttk.Combobox(mathXorSettings, state='readonly', width=45)
+        image2Dropdown["values"] = openImages
+
+        buttonArea = tk.Frame(self.math_not_settings_window, width=100, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.mathNotCommand(
+                               parent,
+                               image1Dropdown.get(),
+                               image2Dropdown.get()))
+
+        button.pack()
+        mathXorSettings.grid(column=0, row=0)
+        image1Label.grid(column=0, row=0, padx=(25, 5))
+        image2Label.grid(column=1, row=0, padx=(5, 15))
+        image1Dropdown.grid(column=0, row=1, padx=(20, 5))
+        image2Dropdown.grid(column=1, row=1, padx=(5, 15))
+        buttonArea.grid(column=0, row=1)
+
+    def mathNotCommand(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+
+        if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
+            tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
+        else:
+            parent.editedImageData[1] = self.mathXorCalculations(parent, img_one, img_two)
+            self.math_not_result_window(parent, img_one)
+
+    def mathNotCalculations(self, parent, img_one, img_two):
+        firstImage = numpy.array(parent.allOpenImagesData[img_one])
+        secondImage = numpy.array(parent.allOpenImagesData[img_two])
+        notImagesData = firstImage
+        for i in range(len(firstImage)):
+            for j in range(len(firstImage[i])):
+                firstImagePixel = firstImage[i, j]
+                secondImagePixel = secondImage[i, j]
+                notImagesData[i][j] = firstImagePixel ^ secondImagePixel
+
+        # result = Image.fromarray(list(addedImagesData)).getdata()
+        # parent.pilImageData = Image.new(parent.loadedImageMode,
+        #                                 parent.loadedImageData[2].size)
+        # parent.pilImageData.putdata(result, parent.loadedImageMode)
+        return notImagesData
+
+    def math_not_result_window(self, parent, img_one):
+        self.math_not_settings_window.destroy()
+        img_title = "Obraz wynikowy - or"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - or({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        # picture_label = tk.Label(math_add_result_window)
+        # picture_label.pack()
+        #
+
+        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
+        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
+        # picture_label.configure(image=selected_picture)
+        cv2.imshow("test", parent.editedImageData[1])
+
+        # math_add_result_window.mainloop()
+
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
-
-
 
 
 class Scaling(tk.Menu):
@@ -1066,25 +1395,26 @@ class MenuTopBar(tk.Menu):
         self.lab2menu.add_command(label="Progowanie obrazu z zachowaniem szarosci",
                                   command=lambda: self.lab2MenuDropdown.thresholdImageWithGreyscale(parent))
         self.lab2menu.add_command(label="Progowanie 2 progami",
-                                 command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValues(parent))
+                                  command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValues(parent))
 
         self.lab2menu.add_command(label="Progowanie 2 progami z zachowaniem szarosci",
-                                  command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValuesGreyscaleLevel(parent))
+                                  command=lambda: self.lab2MenuDropdown.imageThresholdWithTwoValuesGreyscaleLevel(
+                                      parent))
 
         self.add_cascade(label="Lab3", menu=self.lab3menu)
         self.lab3menu.add_cascade(label="Operacje matematyczne", menu=self.lab3menuMathCascade)
         self.lab3menuMathCascade.add_command(label="Dodawanie",
-                                                 command=lambda: self.lab3MenuDropdown.mathAdd(parent))
+                                             command=lambda: self.lab3MenuDropdown.mathAdd(parent))
         self.lab3menuMathCascade.add_command(label="Dodawanie z wysyceniem",
                                              command=lambda: self.lab3MenuDropdown.mathAdd(parent))
         self.lab3menuMathCascade.add_command(label="AND",
-                                                 command=lambda: self.lab3MenuDropdown.math_and(parent))
+                                             command=lambda: self.lab3MenuDropdown.mathAnd(parent))
         self.lab3menuMathCascade.add_command(label="OR",
-                                                 command=lambda: self.lab3MenuDropdown.math_or(parent))
+                                             command=lambda: self.lab3MenuDropdown.mathOr(parent))
         self.lab3menuMathCascade.add_command(label="NOT",
-                                                 command=lambda: self.lab3MenuDropdown.math_not(parent))
+                                             command=lambda: self.lab3MenuDropdown.mathNot(parent))
         self.lab3menuMathCascade.add_command(label="XOR",
-                                                 command=lambda: self.lab3MenuDropdown.math_xor(parent))
+                                             command=lambda: self.lab3MenuDropdown.mathXor(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
         self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
