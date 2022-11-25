@@ -1039,7 +1039,7 @@ class Lab3MenuDropdown(tk.Menu):
             tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
         else:
             parent.editedImageData[1] = self.mathAndCalculations(parent, img_one, img_two)
-            self.math_add_result_window(parent, img_one)
+            self.math_and_result_window(parent, img_one)
 
     def mathAndCalculations(self, parent, img_one, img_two):
         firstImage = numpy.array(parent.allOpenImagesData[img_one])
@@ -1133,7 +1133,7 @@ class Lab3MenuDropdown(tk.Menu):
             for j in range(len(firstImage[i])):
                 firstImagePixel = firstImage[i, j]
                 secondImagePixel = secondImage[i, j]
-                orImagesData[i][j] = firstImagePixel & secondImagePixel
+                orImagesData[i][j] = firstImagePixel | secondImagePixel
 
         # result = Image.fromarray(list(addedImagesData)).getdata()
         # parent.pilImageData = Image.new(parent.loadedImageMode,
