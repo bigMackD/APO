@@ -1290,7 +1290,7 @@ class Lab3MenuDropdown(tk.Menu):
         if (firstImage.shape[0] != secondImage.shape[0]) & (firstImage.shape[1] != secondImage.shape[1]):
             tkinter.messagebox.showerror("Error", "Obrazy musza miec taki sam rozmiar!")
         else:
-            parent.editedImageData[1] = self.mathXorCalculations(parent, img_one, img_two)
+            parent.editedImageData[1] = self.mathNotCalculations(parent, img_one, img_two)
             self.math_not_result_window(parent, img_one)
 
     def mathNotCalculations(self, parent, img_one, img_two):
@@ -1331,6 +1331,67 @@ class Lab3MenuDropdown(tk.Menu):
         cv2.imshow("test", parent.editedImageData[1])
 
         # math_add_result_window.mainloop()
+
+    def mathAddValue(self, parent):
+        self.mathAddValueSettings = tk.Toplevel(parent)
+        self.mathAddValueSettings.title("Dodawanie liczby do obrazu")
+        self.mathAddValueSettings.resizable(False, False)
+        self.mathAddValueSettings.geometry("300x80")
+        self.mathAddValueSettings.focus_set()
+
+        label = tk.Label(self.mathAddValueSettings, text="Liczba (od 1 do 255)", justify=tk.LEFT, anchor='w')
+
+        entry = tk.Entry(self.mathAddValueSettings, width=10)
+        button = tk.Button(self.mathAddValueSettings, text="Wykonaj", width=10,
+                           command=lambda: self.mathAddValueCommand(parent, entry.get()))
+
+        label.pack()
+        entry.pack()
+        button.pack()
+
+    def mathAddValueCommand(self, parent, img_one):
+        parent.editedImageData[1] = self.mathAddValueCalculations(parent, img_one)
+        self.math_add_value_result_window(parent, img_one)
+
+    def mathAddValueCalculations(self, parent, value):
+        try:
+            int(value)
+        except ValueError:
+            print("Wpisana wartosc musi byc liczba")
+            return
+        if not (0 < int(value) < 255):
+            print("Wartosc poza zakresem 0-255")
+            return
+        value = int(value)
+
+        image = list(parent.allOpenImagesData.values())[0]
+        imageWithAddedNumber = numpy.array(image)
+        self.mathAddValueSettings.destroy()
+        for i in range(len(imageWithAddedNumber)):
+            for j in range(len(imageWithAddedNumber[i])):
+                pixel = imageWithAddedNumber[i, j]
+                pixelSum = int(pixel) + int(value)
+                if pixelSum > 255:
+                    imageWithAddedNumber[i, j] = 255
+                else:
+                    imageWithAddedNumber[i, j] = pixelSum
+
+        return imageWithAddedNumber
+
+    def math_add_value_result_window(self, parent, img_one):
+        self.mathAddValueSettings.destroy()
+        img_title = "Obraz wynikowy - dodanie wartosci"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - dodanie wartosci ({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow("test", parent.editedImageData[1])
+
 
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
@@ -1415,6 +1476,8 @@ class MenuTopBar(tk.Menu):
                                              command=lambda: self.lab3MenuDropdown.mathNot(parent))
         self.lab3menuMathCascade.add_command(label="XOR",
                                              command=lambda: self.lab3MenuDropdown.mathXor(parent))
+        self.lab3menuMathCascade.add_command(label="Dodawanie liczby",
+                                             command=lambda: self.lab3MenuDropdown.mathAddValue(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
         self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
