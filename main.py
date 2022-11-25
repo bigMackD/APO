@@ -1392,6 +1392,60 @@ class Lab3MenuDropdown(tk.Menu):
 
         cv2.imshow("test", parent.editedImageData[1])
 
+    def mathDivideValue(self, parent):
+        self.mathDivideValueSettings = tk.Toplevel(parent)
+        self.mathDivideValueSettings.title("Dzielenie przez liczbe")
+        self.mathDivideValueSettings.resizable(False, False)
+        self.mathDivideValueSettings.geometry("300x80")
+        self.mathDivideValueSettings.focus_set()
+
+        label = tk.Label(self.mathDivideValueSettings, text="Liczba", justify=tk.LEFT, anchor='w')
+
+        entry = tk.Entry(self.mathDivideValueSettings, width=10)
+        button = tk.Button(self.mathDivideValueSettings, text="Wykonaj", width=10,
+                           command=lambda: self.mathDivideValueCommand(parent, entry.get()))
+
+        label.pack()
+        entry.pack()
+        button.pack()
+
+    def mathDivideValueCommand(self, parent, img_one):
+        parent.editedImageData[1] = self.mathAddDivideCalculations(parent, img_one)
+        self.math_divide_result_window(parent, img_one)
+
+    def mathAddDivideCalculations(self, parent, value):
+        try:
+            int(value)
+        except ValueError:
+            print("Wpisana wartosc musi byc liczba")
+            return
+        value = int(value)
+
+        image = list(parent.allOpenImagesData.values())[0]
+        imageWithDividedNumber = numpy.array(image)
+        self.mathDivideValueSettings.destroy()
+        for i in range(len(imageWithDividedNumber)):
+            for j in range(len(imageWithDividedNumber[i])):
+                pixel = imageWithDividedNumber[i, j]
+                pixelDivided = int(pixel) / int(value)
+                imageWithDividedNumber[i, j] = pixelDivided
+
+        return imageWithDividedNumber
+
+    def math_divide_result_window(self, parent, img_one):
+        self.mathDivideValueSettings.destroy()
+        img_title = "Obraz wynikowy - podzielenie"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - podzielenie ({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow("test", parent.editedImageData[1])
+
 
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
@@ -1478,6 +1532,8 @@ class MenuTopBar(tk.Menu):
                                              command=lambda: self.lab3MenuDropdown.mathXor(parent))
         self.lab3menuMathCascade.add_command(label="Dodawanie liczby",
                                              command=lambda: self.lab3MenuDropdown.mathAddValue(parent))
+        self.lab3menuMathCascade.add_command(label="Dzielenie przez liczbe",
+                                             command=lambda: self.lab3MenuDropdown.mathDivideValue(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
         self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
