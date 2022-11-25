@@ -993,7 +993,7 @@ class Lab3MenuDropdown(tk.Menu):
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - dodawanie", parent.editedImageData[1])
         # math_add_result_window.mainloop()
 
     def mathAnd(self, parent):
@@ -1076,7 +1076,7 @@ class Lab3MenuDropdown(tk.Menu):
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - and", parent.editedImageData[1])
 
         # math_add_result_window.mainloop()
 
@@ -1160,7 +1160,7 @@ class Lab3MenuDropdown(tk.Menu):
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - or", parent.editedImageData[1])
 
         # math_add_result_window.mainloop()
 
@@ -1227,12 +1227,12 @@ class Lab3MenuDropdown(tk.Menu):
 
     def math_xor_result_window(self, parent, img_one):
         self.math_xor_settings_window.destroy()
-        img_title = "Obraz wynikowy - or"
+        img_title = "Obraz wynikowy - xor"
 
         helper_index = 0
         while img_title in parent.allOpenImagesData.keys():
             helper_index += 1
-            img_title = f"Obraz wynikowy - or({str(helper_index)})"
+            img_title = f"Obraz wynikowy - xor({str(helper_index)})"
 
         def on_closing():
             del parent.allOpenImagesData[img_title]
@@ -1244,7 +1244,7 @@ class Lab3MenuDropdown(tk.Menu):
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - xor", parent.editedImageData[1])
 
         # math_add_result_window.mainloop()
 
@@ -1328,7 +1328,7 @@ class Lab3MenuDropdown(tk.Menu):
         # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
         # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
         # picture_label.configure(image=selected_picture)
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - or", parent.editedImageData[1])
 
         # math_add_result_window.mainloop()
 
@@ -1390,7 +1390,7 @@ class Lab3MenuDropdown(tk.Menu):
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - dodanie wartosci", parent.editedImageData[1])
 
     def mathDivideValue(self, parent):
         self.mathDivideValueSettings = tk.Toplevel(parent)
@@ -1410,10 +1410,10 @@ class Lab3MenuDropdown(tk.Menu):
         button.pack()
 
     def mathDivideValueCommand(self, parent, img_one):
-        parent.editedImageData[1] = self.mathAddDivideCalculations(parent, img_one)
+        parent.editedImageData[1] = self.mathDivideCalculations(parent, img_one)
         self.math_divide_result_window(parent, img_one)
 
-    def mathAddDivideCalculations(self, parent, value):
+    def mathDivideCalculations(self, parent, value):
         try:
             int(value)
         except ValueError:
@@ -1444,8 +1444,61 @@ class Lab3MenuDropdown(tk.Menu):
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        cv2.imshow("test", parent.editedImageData[1])
+        cv2.imshow("Obraz wynikowy - podzielenie", parent.editedImageData[1])
 
+    def mathDivideValue(self, parent):
+        self.mathDivideValueSettings = tk.Toplevel(parent)
+        self.mathDivideValueSettings.title("Dzielenie przez liczbe")
+        self.mathDivideValueSettings.resizable(False, False)
+        self.mathDivideValueSettings.geometry("300x80")
+        self.mathDivideValueSettings.focus_set()
+
+        label = tk.Label(self.mathDivideValueSettings, text="Liczba", justify=tk.LEFT, anchor='w')
+
+        entry = tk.Entry(self.mathDivideValueSettings, width=10)
+        button = tk.Button(self.mathDivideValueSettings, text="Wykonaj", width=10,
+                           command=lambda: self.mathDivideValueCommand(parent, entry.get()))
+
+        label.pack()
+        entry.pack()
+        button.pack()
+
+    def mathMultiplyValueCommand(self, parent, img_one):
+        parent.editedImageData[1] = self.mathMultiplyCalculations(parent, img_one)
+        self.math_multiply_result_window(parent, img_one)
+
+    def mathMultiplyCalculations(self, parent, value):
+        try:
+            int(value)
+        except ValueError:
+            print("Wpisana wartosc musi byc liczba")
+            return
+        value = int(value)
+
+        image = list(parent.allOpenImagesData.values())[0]
+        imageMultiplyNumber = numpy.array(image)
+        self.mathMultiplyValueSettings.destroy()
+        for i in range(len(imageMultiplyNumber)):
+            for j in range(len(imageMultiplyNumber[i])):
+                pixel = imageMultiplyNumber[i, j]
+                pixelMultiply = int(pixel) * int(value)
+                imageMultiplyNumber[i, j] = pixelMultiply
+
+        return imageMultiplyNumber
+
+    def math_multiply_result_window(self, parent, img_one):
+        self.mathMultiplyValueSettings.destroy()
+        img_title = "Obraz wynikowy - mnozenie"
+
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - mnozenie ({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow("Obraz wynikowy - mnozenie", parent.editedImageData[1])
 
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
@@ -1536,9 +1589,6 @@ class MenuTopBar(tk.Menu):
                                              command=lambda: self.lab3MenuDropdown.mathDivideValue(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
-        self.lab3menu.add_command(label="Dodawanie obrazów z wysyceniem",
-                                  # command=lambda: self.lab3MenuDropdown.addImages(parent)
-                                  )
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
