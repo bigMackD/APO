@@ -967,6 +967,7 @@ class Lab3MenuDropdown(tk.Menu):
                 firstImagePixel = firstImage[i, j]
                 secondImagePixel = secondImage[i, j]
                 addedImagesData[i][j] = (int(firstImagePixel) + int(secondImagePixel))
+                #DOPISAC 255 WARUNEK
 
         # result = Image.fromarray(list(addedImagesData)).getdata()
         # parent.pilImageData = Image.new(parent.loadedImageMode,
@@ -1504,7 +1505,69 @@ class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
+class Lab5MenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
 
+    def imageSobel(self, parent):
+        self.sobelWindow = tk.Toplevel(parent)
+        self.sobelWindow.resizable(False, False)
+        self.sobelWindow.title("Ustawienia")
+        self.sobelWindow.focus_set()
+
+        sobelSettings = tk.Frame(self.sobelWindow, width=150, height=150)
+        label = tk.Label(sobelSettings, text="Ustawienia pikseli brzegowych", padx=10)
+        combobox = ttk.Combobox(sobelSettings, state='readonly', width=45)
+        combobox["values"] = list(self.items.keys())
+        combobox.current(0)
+
+        button_area = tk.Frame(self.sobelWindow, width=50, pady=10)
+        button = tk.Button(button_area, text="Wykonaj", width=10,
+                           command=lambda: self.imageSobelControler(
+                               parent,
+                               self.items[combobox.get()]))
+        button.pack()
+        sobelSettings.grid(column=0, row=0)
+        label.grid(column=0, row=0, padx=(25, 5))
+        combobox.grid(column=0, row=1, padx=(20, 5))
+        button_area.grid(column=0, row=1, padx=(20, 5))
+
+    def imageSobelControler(self, parent):
+        parent.edited_image_data[1] = self.imageSobelCalculate(parent)
+        self.imageSobelResultWindow(parent)
+
+    def imageSobelCalculate(self, parent):
+        sobelx = cv2.Sobel(parent.cv2Image, cv2.CV_64F, 1, 0, ksize=5)
+        sobely = cv2.Sobel(parent.cv2Image, cv2.CV_64F, 0, 1, ksize=5)
+        sobelSum = sobelx + sobely
+        im_pil = Image.fromarray(sobelSum).getdata()
+        return im_pil
+
+    def imageSobelResultWindow(self, parent):
+        sobel_result_window = tk.Toplevel()
+        img_title = "Obraz wynikowy - detekcja krawędzi met. sobel"
+        helper_index = 0
+        while img_title in parent.all_open_image_data.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - detekcja krawędzi met. sobel({str(helper_index)})"
+        sobel_result_window.title(img_title)
+
+        def on_closing():
+            del parent.all_open_image_data[img_title]
+            sobel_result_window.destroy()
+
+        sobel_result_window.protocol("WM_DELETE_WINDOW", on_closing)
+        parent.all_open_image_data[img_title] = list(parent.edited_image_data[1])
+        parent.pil_image_data = Image.new(parent.loaded_image_mode,
+                                          parent.loaded_image_data[2].size)
+        parent.pil_image_data.putdata(parent.edited_image_data[1])
+        picture_label = tk.Label(sobel_result_window)
+        picture_label.pack()
+
+        parent.histogram_image_data = ["sobel", parent.pil_image_data.getdata()]
+        selected_picture = ImageTk.PhotoImage(parent.pil_image_data)
+        picture_label.configure(image=selected_picture)
+        sobel_result_window.mainloop()
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
@@ -1528,6 +1591,7 @@ class MenuTopBar(tk.Menu):
         self.lab2menu = tk.Menu(self, tearoff=0)
         self.lab3menu = tk.Menu(self, tearoff=0)
         self.lab4menu = tk.Menu(self, tearoff=0)
+        self.lab5menu = tk.Menu(self, tearoff=0)
         self.lab3menuMathCascade = tk.Menu(self.lab3menu, tearoff=0)
         self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
@@ -1537,6 +1601,8 @@ class MenuTopBar(tk.Menu):
         self.lab2MenuDropdown = Lab2MenuDropdown()
         self.lab3MenuDropdown = Lab3MenuDropdown()
         self.lab4MenuDropdown = Lab4MenuDropdown()
+        self.lab5MenuDropdown = Lab5MenuDropdown()
+
         self.resizeDropdown = Scaling()
 
     def fill(self, parent: Program):
@@ -1589,6 +1655,10 @@ class MenuTopBar(tk.Menu):
                                              command=lambda: self.lab3MenuDropdown.mathDivideValue(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
+
+        self.add_cascade(label="Lab5", menu=self.lab5menu)
+        self.lab5menu.add_command(label="Detekcja krawedzi sobela",
+                                  command=lambda: self.lab5MenuDropdown.imageSobelControler(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
