@@ -1533,41 +1533,28 @@ class Lab5MenuDropdown(tk.Menu):
         button_area.grid(column=0, row=1, padx=(20, 5))
 
     def imageSobelControler(self, parent):
-        parent.edited_image_data[1] = self.imageSobelCalculate(parent)
+        parent.editedImageData[1] = self.imageSobelCalculate(parent)
         self.imageSobelResultWindow(parent)
 
     def imageSobelCalculate(self, parent):
-        sobelx = cv2.Sobel(parent.cv2Image, cv2.CV_64F, 1, 0, ksize=5)
-        sobely = cv2.Sobel(parent.cv2Image, cv2.CV_64F, 0, 1, ksize=5)
+        img_gaussian = cv2.GaussianBlur(parent.cvImage, (3, 3), 0)
+        sobelx = cv2.Sobel(img_gaussian, -1, 1, 0, ksize=3)
+        sobely = cv2.Sobel(img_gaussian, -1, 0, 1, ksize=3)
         sobelSum = sobelx + sobely
-        im_pil = Image.fromarray(sobelSum).getdata()
-        return im_pil
+        return sobelSum
 
     def imageSobelResultWindow(self, parent):
-        sobel_result_window = tk.Toplevel()
         img_title = "Obraz wynikowy - detekcja krawędzi met. sobel"
         helper_index = 0
-        while img_title in parent.all_open_image_data.keys():
+        while img_title in parent.allOpenImagesData.keys():
             helper_index += 1
             img_title = f"Obraz wynikowy - detekcja krawędzi met. sobel({str(helper_index)})"
-        sobel_result_window.title(img_title)
 
         def on_closing():
-            del parent.all_open_image_data[img_title]
-            sobel_result_window.destroy()
+            del parent.allOpenImagesData[img_title]
 
-        sobel_result_window.protocol("WM_DELETE_WINDOW", on_closing)
-        parent.all_open_image_data[img_title] = list(parent.edited_image_data[1])
-        parent.pil_image_data = Image.new(parent.loaded_image_mode,
-                                          parent.loaded_image_data[2].size)
-        parent.pil_image_data.putdata(parent.edited_image_data[1])
-        picture_label = tk.Label(sobel_result_window)
-        picture_label.pack()
+        cv2.imshow("Obraz wynikowy - sobel", parent.editedImageData[1])
 
-        parent.histogram_image_data = ["sobel", parent.pil_image_data.getdata()]
-        selected_picture = ImageTk.PhotoImage(parent.pil_image_data)
-        picture_label.configure(image=selected_picture)
-        sobel_result_window.mainloop()
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
