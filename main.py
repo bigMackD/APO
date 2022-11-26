@@ -1509,28 +1509,6 @@ class Lab5MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
-    def imageSobel(self, parent):
-        self.sobelWindow = tk.Toplevel(parent)
-        self.sobelWindow.resizable(False, False)
-        self.sobelWindow.title("Ustawienia")
-        self.sobelWindow.focus_set()
-
-        sobelSettings = tk.Frame(self.sobelWindow, width=150, height=150)
-        label = tk.Label(sobelSettings, text="Ustawienia pikseli brzegowych", padx=10)
-        combobox = ttk.Combobox(sobelSettings, state='readonly', width=45)
-        combobox["values"] = list(self.items.keys())
-        combobox.current(0)
-
-        button_area = tk.Frame(self.sobelWindow, width=50, pady=10)
-        button = tk.Button(button_area, text="Wykonaj", width=10,
-                           command=lambda: self.imageSobelControler(
-                               parent,
-                               self.items[combobox.get()]))
-        button.pack()
-        sobelSettings.grid(column=0, row=0)
-        label.grid(column=0, row=0, padx=(25, 5))
-        combobox.grid(column=0, row=1, padx=(20, 5))
-        button_area.grid(column=0, row=1, padx=(20, 5))
 
     def imageSobelControler(self, parent):
         parent.editedImageData[1] = self.imageSobelCalculate(parent)
@@ -1544,16 +1522,62 @@ class Lab5MenuDropdown(tk.Menu):
         return sobelSum
 
     def imageSobelResultWindow(self, parent):
-        img_title = "Obraz wynikowy - detekcja krawędzi met. sobel"
+        img_title = "Obraz wynikowy - detekcja krawedzi met. sobel"
         helper_index = 0
         while img_title in parent.allOpenImagesData.keys():
             helper_index += 1
-            img_title = f"Obraz wynikowy - detekcja krawędzi met. sobel({str(helper_index)})"
+            img_title = f"Obraz wynikowy - detekcja krawedzi met. sobel({str(helper_index)})"
 
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        cv2.imshow("Obraz wynikowy - sobel", parent.editedImageData[1])
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+    def imagePrewittControler(self, parent):
+        parent.editedImageData[1] = self.imagePrewittCalculate(parent)
+        self.imagePrewittResultWindow(parent)
+
+    def imagePrewittCalculate(self, parent):
+        img_gaussian = cv2.GaussianBlur(parent.cvImage, (3, 3), 0)
+        kernelx = numpy.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
+        kernely = numpy.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
+        img_prewittx = cv2.filter2D(img_gaussian, -1, kernelx)
+        img_prewitty = cv2.filter2D(img_gaussian, -1, kernely)
+
+        prewittSum = img_prewittx + img_prewitty
+        return prewittSum
+
+    def imagePrewittResultWindow(self, parent):
+        img_title = "Obraz wynikowy - detekcja krawedzi met. prewitta"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - detekcja krawedzi met. prewitta({str(helper_index)})"
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+    def imageCannyControler(self, parent):
+        parent.editedImageData[1] = self.imageCannyCalculate(parent)
+        self.imageCannyResultWindow(parent)
+
+    def imageCannyCalculate(self, parent):
+        img_canny = cv2.Canny(parent.cvImage, 100, 200)
+        return img_canny
+
+    def imageCannyResultWindow(self, parent):
+        img_title = "Obraz wynikowy - detekcja krawedzi met. canny"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - detekcja krawedzi met. canny({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow(img_title, parent.editedImageData[1])
+
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -1646,6 +1670,10 @@ class MenuTopBar(tk.Menu):
         self.add_cascade(label="Lab5", menu=self.lab5menu)
         self.lab5menu.add_command(label="Detekcja krawedzi sobela",
                                   command=lambda: self.lab5MenuDropdown.imageSobelControler(parent))
+        self.lab5menu.add_command(label="Detekcja krawedzi prwitta",
+                                  command=lambda: self.lab5MenuDropdown.imagePrewittControler(parent))
+        self.lab5menu.add_command(label="Detekcja krawedzi canny",
+                                  command=lambda: self.lab5MenuDropdown.imageCannyControler(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
