@@ -1136,10 +1136,6 @@ class Lab3MenuDropdown(tk.Menu):
                 secondImagePixel = secondImage[i, j]
                 orImagesData[i][j] = firstImagePixel | secondImagePixel
 
-        # result = Image.fromarray(list(addedImagesData)).getdata()
-        # parent.pilImageData = Image.new(parent.loadedImageMode,
-        #                                 parent.loadedImageData[2].size)
-        # parent.pilImageData.putdata(result, parent.loadedImageMode)
         return orImagesData
 
     def math_or_result_window(self, parent, img_one):
@@ -1154,16 +1150,8 @@ class Lab3MenuDropdown(tk.Menu):
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        # picture_label = tk.Label(math_add_result_window)
-        # picture_label.pack()
-        #
-
-        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
-        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
-        # picture_label.configure(image=selected_picture)
         cv2.imshow("Obraz wynikowy - or", parent.editedImageData[1])
 
-        # math_add_result_window.mainloop()
 
     def mathXor(self, parent):
         """
@@ -1220,10 +1208,6 @@ class Lab3MenuDropdown(tk.Menu):
                 secondImagePixel = secondImage[i, j]
                 xorImagesData[i][j] = firstImagePixel ^ secondImagePixel
 
-        # result = Image.fromarray(list(addedImagesData)).getdata()
-        # parent.pilImageData = Image.new(parent.loadedImageMode,
-        #                                 parent.loadedImageData[2].size)
-        # parent.pilImageData.putdata(result, parent.loadedImageMode)
         return xorImagesData
 
     def math_xor_result_window(self, parent, img_one):
@@ -1238,16 +1222,8 @@ class Lab3MenuDropdown(tk.Menu):
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        # picture_label = tk.Label(math_add_result_window)
-        # picture_label.pack()
-        #
-
-        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
-        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
-        # picture_label.configure(image=selected_picture)
         cv2.imshow("Obraz wynikowy - xor", parent.editedImageData[1])
 
-        # math_add_result_window.mainloop()
 
     def mathNot(self, parent):
         """
@@ -1304,10 +1280,6 @@ class Lab3MenuDropdown(tk.Menu):
                 secondImagePixel = secondImage[i, j]
                 notImagesData[i][j] = firstImagePixel ^ secondImagePixel
 
-        # result = Image.fromarray(list(addedImagesData)).getdata()
-        # parent.pilImageData = Image.new(parent.loadedImageMode,
-        #                                 parent.loadedImageData[2].size)
-        # parent.pilImageData.putdata(result, parent.loadedImageMode)
         return notImagesData
 
     def math_not_result_window(self, parent, img_one):
@@ -1322,16 +1294,8 @@ class Lab3MenuDropdown(tk.Menu):
         def on_closing():
             del parent.allOpenImagesData[img_title]
 
-        # picture_label = tk.Label(math_add_result_window)
-        # picture_label.pack()
-        #
-
-        # parent.histogramData = ["Dodane", parent.pilImageData.getdata()]
-        # selected_picture = ImageTk.PhotoImage(parent.pilImageData)
-        # picture_label.configure(image=selected_picture)
         cv2.imshow("Obraz wynikowy - or", parent.editedImageData[1])
 
-        # math_add_result_window.mainloop()
 
     def mathAddValue(self, parent):
         self.mathAddValueSettings = tk.Toplevel(parent)
@@ -1503,7 +1467,189 @@ class Lab3MenuDropdown(tk.Menu):
 
 class Lab4MenuDropdown(tk.Menu):
     def __init__(self):
+        smoothingAveragingMatrix = numpy.array([
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1]
+        ])
+        smoothingAveragingWeightsMatrix = numpy.array([
+            [1, 1, 1],
+            [1, 8, 1],
+            [1, 1, 1]
+        ])
+        smoothingGaussMatrix = numpy.array([
+            [1, 2, 1],
+            [2, 4, 2],
+            [1, 2, 1]
+        ])
         tk.Menu.__init__(self, tearoff=False)
+        self.smoothingDropdownOptions = {"Usrednienie": smoothingAveragingMatrix,
+                      "Usrednienie z wagami": smoothingAveragingWeightsMatrix,
+                      "Filtr gaussowski": smoothingGaussMatrix}
+
+    def linearSmoothing(self, parent):
+        self.linearSmoothingWindow = tk.Toplevel(parent)
+        self.linearSmoothingWindow.resizable(False, False)
+        self.linearSmoothingWindow.title("Ustawienia")
+        self.linearSmoothingWindow.focus_set()
+
+        settingsFrame = tk.Frame(self.linearSmoothingWindow, width=150, height=150)
+        label = tk.Label(settingsFrame, text="Ustawienia pikseli brzegowych", padx=10)
+        combobox = ttk.Combobox(settingsFrame, state='readonly', width=45)
+        combobox["values"] = list(self.dropdownOptions.keys())
+        combobox.current(0)
+
+        buttonArea = tk.Frame(self.linearSmoothingWindow, width=50, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.linearSmoothingControler(
+                               parent,
+                               self.smoothingDropdownOptions[combobox.get()]))
+        button.pack()
+        settingsFrame.grid(column=0, row=0)
+        label.grid(column=0, row=0, padx=(25, 5))
+        combobox.grid(column=0, row=1, padx=(20, 5))
+        buttonArea.grid(column=0, row=1, padx=(20, 5))
+
+    def linearSmoothingControler(self, parent, border):
+        parent.editedImageData[1] = self.linearSmoothingCalculate(parent, border)
+        self.linearSmoothingResultWindow(parent)
+
+    def linearSmoothingCalculate(self, parent, border):
+        # result = cv2.blur(parent.cvImage, (5, 5), 0, borderType=border)
+        # kernel = numpy.ones((5, 5), numpy.float32) / 25
+        result = cv2.filter2D(parent.cvImage, -1, border)
+        return result
+
+    def linearSmoothingResultWindow(self, parent):
+        img_title = "Obraz wynikowy - wygladzanie"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - wygladzanie({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+        # --------------------------------------------
+
+    def linearSharpening(self, parent):
+
+        mask_values = {"Maska 1 - [[0, -1, 0], [-1, 4, -1], [0, -1, 0]]": 0,
+                       "Maska 2 - [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]": 1,
+                       "Maska 3 - [[1, -2, 1], [-2, 4, -2], [1, -2, 1]]": 2}
+
+        self.linearSharpeningWindow = tk.Toplevel(parent)
+        self.linearSharpeningWindow.resizable(False, False)
+        self.linearSharpeningWindow.title("Ustawienia")
+        self.linearSharpeningWindow.focus_set()
+
+        settingsFrame = tk.Frame(self.linearSharpeningWindow, width=150, height=150)
+        label = tk.Label(settingsFrame, text="Ustawienia pikseli brzegowych", padx=10)
+        combobox = ttk.Combobox(settingsFrame, state='readonly', width=45)
+        combobox["values"] = list(mask_values.keys())
+        combobox.current(0)
+
+        buttonArea = tk.Frame(self.linearSharpeningWindow, width=50, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.linearSharpeningControler(
+                               parent,
+                               mask_values[combobox.get()]))
+        button.pack()
+        settingsFrame.grid(column=0, row=0)
+        label.grid(column=0, row=0, padx=(25, 5))
+        combobox.grid(column=0, row=1, padx=(20, 5))
+        buttonArea.grid(column=0, row=1, padx=(20, 5))
+
+    def linearSharpeningControler(self, parent, selected):
+        parent.editedImageData[1] = self.linearSharpeningCalculate(parent, selected)
+        self.linearSmoothingResultWindow(parent)
+
+    def linearSharpeningCalculate(self, parent, selected):
+        mask_sharp = [numpy.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]]),
+                      numpy.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
+                      numpy.array([[1, -2, 1], [-2, 4, -2], [1, -2, 1]])]
+
+        result = cv2.filter2D(parent.cvImage, cv2.CV_64F, mask_sharp[selected], borderType=cv2.BORDER_DEFAULT)
+        return result
+
+    def linearSharpeningResultWindow(self, parent):
+        img_title = "Obraz wynikowy - wyostrzanie"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - wyostrzanie({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+        # --------------------------------------------
+
+    def sobelDirectional(self, parent):
+
+        directions_values = {"Maska NW - [[+1, +1, 0], [+1, 0, -1], [0, -1, -1]]": 0,
+                             "Maska N - [[+1, +1, +1], [0, 0, 0], [-1, -1, -1]]":  1,
+                             "Maska NE - [[0, +1, +1], [-1, 0, +1], [-1, -1, 0]]": 2,
+                             "Maska E - [[-1, 0, +1], [-1, 0, +1], [-1, 0, +1]]":  3,
+                             "Maska SE - [[-1, -1, 0], [-1, 0, +1], [0, +1, +1]]": 4,
+                             "Maska S - [[-1, -1, -1], [0, 0, 0], [+1, +1, +1]]":  5,
+                             "Maska SW - [[0, -1, -1], [+1, 0, -1], [+1, +1, 0]]": 6,
+                             "Maska W - [[+1, 0, -1], [+1, 0, -1], [+1, 0, -1]]":  7}
+
+        self.sobelDirectionalWindow = tk.Toplevel(parent)
+        self.sobelDirectionalWindow.resizable(False, False)
+        self.sobelDirectionalWindow.title("Ustawienia")
+        self.sobelDirectionalWindow.focus_set()
+
+        settingsFrame = tk.Frame(self.sobelDirectionalWindow, width=150, height=150)
+        label = tk.Label(settingsFrame, text="Ustawienia kierunku", padx=10)
+        combobox = ttk.Combobox(settingsFrame, state='readonly', width=45)
+        combobox["values"] = list(directions_values.keys())
+        combobox.current(0)
+
+        buttonArea = tk.Frame(self.sobelDirectionalWindow, width=50, pady=10)
+        button = tk.Button(buttonArea, text="Wykonaj", width=10,
+                           command=lambda: self.sobelDirectionalControler(
+                               parent,
+                               directions_values[combobox.get()]))
+        button.pack()
+        settingsFrame.grid(column=0, row=0)
+        label.grid(column=0, row=0, padx=(25, 5))
+        combobox.grid(column=0, row=1, padx=(20, 5))
+        buttonArea.grid(column=0, row=1, padx=(20, 5))
+
+    def sobelDirectionalControler(self, parent, selected):
+        parent.editedImageData[1] = self.sobelDirectionalCalculate(parent, selected)
+        self.sobelDirectionalResultWindow(parent)
+
+    def sobelDirectionalCalculate(self, parent, selected):
+        mask_values = [numpy.array([[+1, +1, 0], [+1, 0, -1], [0, -1, -1]]),
+                       numpy.array([[+1, +1, +1], [0, 0, 0], [-1, -1, -1]]),
+                       numpy.array([[0, +1, +1], [-1, 0, +1], [-1, -1, 0]]),
+                       numpy.array([[-1, 0, +1], [-1, 0, +1], [-1, 0, +1]]),
+                       numpy.array([[-1, -1, 0], [-1, 0, +1], [0, +1, +1]]),
+                       numpy.array([[-1, -1, -1], [0, 0, 0], [+1, +1, +1]]),
+                       numpy.array([[0, -1, -1], [+1, 0, -1], [+1, +1, 0]]),
+                       numpy.array([[+1, 0, -1], [+1, 0, -1], [+1, 0, -1]])]
+
+        result = cv2.filter2D(parent.cvImage, cv2.CV_64F, mask_values[selected], borderType=cv2.BORDER_DEFAULT)
+        return result
+
+    def sobelDirectionalResultWindow(self, parent):
+        img_title = "Obraz wynikowy - sobel kierunkowy"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - sobel kierunkowy({str(helper_index)})"
+
+        def on_closing():
+            del parent.allOpenImagesData[img_title]
+
+        cv2.imshow(img_title, parent.editedImageData[1])
+
 
 class Lab5MenuDropdown(tk.Menu):
     def __init__(self):
@@ -1666,6 +1812,12 @@ class MenuTopBar(tk.Menu):
                                              command=lambda: self.lab3MenuDropdown.mathDivideValue(parent))
 
         self.add_cascade(label="Lab4", menu=self.lab4menu)
+        self.lab4menu.add_command(label="Wygladzanie liniowe",
+                                  command=lambda: self.lab4MenuDropdown.linearSmoothing(parent))
+        self.lab4menu.add_command(label="Wyostrzanie liniowe",
+                                  command=lambda: self.lab4MenuDropdown.linearSharpening(parent))
+        self.lab4menu.add_command(label="Sobel kierunkowy",
+                                  command=lambda: self.lab4MenuDropdown.sobelDirectional(parent))
 
         self.add_cascade(label="Lab5", menu=self.lab5menu)
         self.lab5menu.add_command(label="Detekcja krawedzi sobela",
