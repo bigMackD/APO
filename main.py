@@ -1655,6 +1655,10 @@ class Lab5MenuDropdown(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
 
+        self.thresholdMethods = {"Zwykłe": cv2.THRESH_BINARY,
+                                 "Otsu": cv2.THRESH_OTSU,
+                                 "Adaptacyjne": 0}
+
 
     def imageSobelControler(self, parent):
         parent.editedImageData[1] = self.imageSobelCalculate(parent)
@@ -1724,6 +1728,56 @@ class Lab5MenuDropdown(tk.Menu):
 
         cv2.imshow(img_title, parent.editedImageData[1])
 
+    def interactiveThreshold(self, parent):
+        self.interactiveThresholdSettingsWindow = tk.Toplevel(parent)
+        self.interactiveThresholdSettingsWindow.title("Ustawienia progowania")
+        self.interactiveThresholdSettingsWindow.resizable(False, False)
+        self.interactiveThresholdSettingsWindow.geometry("350x200")
+        self.interactiveThresholdSettingsWindow.focus_set()
+
+        topLabel = tk.Label(self.interactiveThresholdSettingsWindow, text="Sposób progowania", padx=10)
+        thresholdTypeCombobox = ttk.Combobox(self.interactiveThresholdSettingsWindow, state='readonly', width=45)
+        thresholdTypeCombobox["values"] = list(self.thresholdMethods.keys())
+        thresholdTypeCombobox.current(0)
+
+        bottomLabel = tk.Label(self.interactiveThresholdSettingsWindow, text="Próg", justify=tk.LEFT, anchor='w')
+        self.scaleWiget = tk.Scale(self.interactiveThresholdSettingsWindow, from_=1, to=255,
+                                     orient=tk.HORIZONTAL, length=320,
+                                     command=lambda scaleValue: self.thresholdAdaptiveCalcRefresh(parent,
+                                                                self.thresholdMethods[thresholdTypeCombobox.get()],
+                                                                int(scaleValue)))
+        closeButton = tk.Button(self.interactiveThresholdSettingsWindow, text="Zamknij", width=10,
+                           command=lambda: self.interactiveThresholdSettingsWindow.destroy())
+
+        topLabel.pack()
+        thresholdTypeCombobox.pack()
+        bottomLabel.pack()
+        self.scaleWiget.pack()
+
+    def thresholdAdaptiveCalcRefresh(self, parent, thresholdType, blockSize):
+        """
+        Refreshes and calculates displayed image every time scale widget is moved.
+        :param parent:
+        :param thresholdType:
+        :param blockSize:
+        :return:
+        """
+        # calculate thresholded img
+        if not (blockSize % 2) or blockSize == 1:
+            return
+        new_picture = self.imageThresholdAdaptiveCalculations(parent, thresholdType,
+                                                              blockSize)
+        cv2.imshow("Progowanie", new_picture)
+
+
+    def imageThresholdAdaptiveCalculations(self, parent, thresholdType, blockSize):
+        imageThresholded = []
+        if thresholdType == 0:
+            imageThresholded = cv2.adaptiveThreshold(parent.cvImage, 255, cv2.THRESH_BINARY, thresholdType, blockSize, 5)
+        else:
+            imageThresholded = cv2.threshold(src=parent.cvImage, type=thresholdType, thresh=blockSize,
+                                             maxval=255)[1]
+        return imageThresholded
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -1826,6 +1880,8 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab5MenuDropdown.imagePrewittControler(parent))
         self.lab5menu.add_command(label="Detekcja krawedzi canny",
                                   command=lambda: self.lab5MenuDropdown.imageCannyControler(parent))
+        self.lab5menu.add_command(label="Progowanie interaktywne",
+                                  command=lambda: self.lab5MenuDropdown.interactiveThreshold(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
