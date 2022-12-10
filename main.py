@@ -1835,6 +1835,63 @@ class Lab6MenuDropdown(tk.Menu):
             img_title = f"Obraz wynikowy - open/close({str(helper_index)})"
         cv2.imshow(img_title, parent.editedImageData[1])
 
+    def moments(self, parent):
+        moments = self.imageMomentsCalculate(parent)
+        print(moments)
+
+    def imageMomentsCalculate(self, parent):
+        moments = cv2.moments(parent.cvImage)
+        return moments
+
+    def getAllData(self, parent):
+        areaPerimeter = self.imageAreaPerimeterCalculate(parent)
+        cnt = self.getContours(parent)
+        aspectRatio = self.getAspectRatio(cnt)
+        extent = self.getExtent(cnt)
+        solidity = self.getSolidity(cnt)
+        eqiDiameter = self.getEquivalentDiameter(cnt)
+
+
+    def areaPerimeter(self, parent):
+        areaPerimeter = self.imageAreaPerimeterCalculate(parent)
+        print(areaPerimeter)
+
+    def imageAreaPerimeterCalculate(self, parent):
+        cnt = self.getContours(parent)
+        # compute the area and perimeter
+        area = cv2.contourArea(cnt)
+        perimeter = cv2.arcLength(cnt, True)
+        perimeter = round(perimeter, 4)
+        return [area, perimeter]
+
+    def getContours(self, parent):
+        # Find the contours using binary image
+        contours, hierarchy = cv2.findContours(parent.cvImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        return contours[0]
+
+    def getAspectRatio(self, cnt):
+        x, y, w, h = cv2.boundingRect(cnt)
+        aspect_ratio = float(w) / h
+        return aspect_ratio
+
+    def getExtent(self, cnt):
+        area = cv2.contourArea(cnt)
+        x, y, w, h = cv2.boundingRect(cnt)
+        rect_area = w * h
+        extent = float(area) / rect_area
+        return extent
+
+    def getSolidity(self, cnt):
+        area = cv2.contourArea(cnt)
+        hull = cv2.convexHull(cnt)
+        hull_area = cv2.contourArea(hull)
+        solidity = float(area) / hull_area
+        return solidity
+
+    def getEquivalentDiameter(self, cnt):
+        area = cv2.contourArea(cnt)
+        equi_diameter = numpy.sqrt(4 * area / numpy.pi)
+        return equi_diameter
 
 class Scaling(tk.Menu):
     def __init__(self):
@@ -1951,6 +2008,12 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab6MenuDropdown.morphologyOpenClose(parent, cv2.MORPH_OPEN))
         self.lab6menu.add_command(label="Morfologficzne zamkniecie",
                                   command=lambda: self.lab6MenuDropdown.morphologyOpenClose(parent, cv2.MORPH_CLOSE))
+        self.lab6menu.add_command(label="Momenty",
+                                  command=lambda: self.lab6MenuDropdown.moments(parent))
+        self.lab6menu.add_command(label="Pole powierzchni i obwod",
+                                  command=lambda: self.lab6MenuDropdown.areaPerimeter(parent))
+        self.lab6menu.add_command(label="Pobierz wszystkie dane",
+                                  command=lambda: self.lab6MenuDropdown.getAllData(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
