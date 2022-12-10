@@ -1779,6 +1779,63 @@ class Lab5MenuDropdown(tk.Menu):
                                              maxval=255)[1]
         return imageThresholded
 
+
+class Lab6MenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+
+    def erode(self, parent):
+        parent.editedImageData[1] = self.imageErodeCalculate(parent)
+        self.imageErodeResultWindow(parent)
+
+    def imageErodeCalculate(self, parent):
+        kernel = numpy.ones((3, 3), numpy.uint8)
+        image = cv2.erode(parent.cvImage, kernel)
+        return image
+
+    def imageErodeResultWindow(self, parent):
+        img_title = "Obraz wynikowy - erozja"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - erozja({str(helper_index)})"
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+    def dilate(self, parent):
+        parent.editedImageData[1] = self.imageDilateCalculate(parent)
+        self.imageErodeResultWindow(parent)
+
+    def imageDilateCalculate(self, parent):
+        kernel = numpy.ones((3, 3), numpy.uint8)
+        image = cv2.dilate(parent.cvImage, kernel)
+        return image
+
+    def imageDilateResultWindow(self, parent):
+        img_title = "Obraz wynikowy - dylacja"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - dylacja({str(helper_index)})"
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+    def morphologyOpenClose(self, parent, morph_type):
+        parent.editedImageData[1] = self.imagemorphologyOpenCloseCalculate(parent, morph_type)
+        self.imageErodeResultWindow(parent)
+
+    def imagemorphologyOpenCloseCalculate(self, parent, morph_type):
+        kernel = numpy.ones((3, 3), numpy.uint8)
+        image = cv2.morphologyEx(parent.cvImage, morph_type, kernel)
+        return image
+
+    def imagemorphologyOpenCloseResultWindow(self, parent):
+        img_title = "Obraz wynikowy - open/close"
+        helper_index = 0
+        while img_title in parent.allOpenImagesData.keys():
+            helper_index += 1
+            img_title = f"Obraz wynikowy - open/close({str(helper_index)})"
+        cv2.imshow(img_title, parent.editedImageData[1])
+
+
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
@@ -1803,6 +1860,7 @@ class MenuTopBar(tk.Menu):
         self.lab3menu = tk.Menu(self, tearoff=0)
         self.lab4menu = tk.Menu(self, tearoff=0)
         self.lab5menu = tk.Menu(self, tearoff=0)
+        self.lab6menu = tk.Menu(self, tearoff=0)
         self.lab3menuMathCascade = tk.Menu(self.lab3menu, tearoff=0)
         self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
@@ -1813,6 +1871,7 @@ class MenuTopBar(tk.Menu):
         self.lab3MenuDropdown = Lab3MenuDropdown()
         self.lab4MenuDropdown = Lab4MenuDropdown()
         self.lab5MenuDropdown = Lab5MenuDropdown()
+        self.lab6MenuDropdown = Lab6MenuDropdown()
 
         self.resizeDropdown = Scaling()
 
@@ -1882,6 +1941,16 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab5MenuDropdown.imageCannyControler(parent))
         self.lab5menu.add_command(label="Progowanie interaktywne",
                                   command=lambda: self.lab5MenuDropdown.interactiveThreshold(parent))
+
+        self.add_cascade(label="Lab6", menu=self.lab6menu)
+        self.lab6menu.add_command(label="Erozja",
+                                  command=lambda: self.lab6MenuDropdown.erode(parent))
+        self.lab6menu.add_command(label="Dylacja",
+                                  command=lambda: self.lab6MenuDropdown.dilate(parent))
+        self.lab6menu.add_command(label="Morfologficzne otwarcie",
+                                  command=lambda: self.lab6MenuDropdown.morphologyOpenClose(parent, cv2.MORPH_OPEN))
+        self.lab6menu.add_command(label="Morfologficzne zamkniecie",
+                                  command=lambda: self.lab6MenuDropdown.morphologyOpenClose(parent, cv2.MORPH_CLOSE))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
