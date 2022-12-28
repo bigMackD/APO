@@ -7,6 +7,8 @@ import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
 
+import csv
+
 import cv2
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -1496,7 +1498,7 @@ class Lab4MenuDropdown(tk.Menu):
         settingsFrame = tk.Frame(self.linearSmoothingWindow, width=150, height=150)
         label = tk.Label(settingsFrame, text="Ustawienia pikseli brzegowych", padx=10)
         combobox = ttk.Combobox(settingsFrame, state='readonly', width=45)
-        combobox["values"] = list(self.dropdownOptions.keys())
+        combobox["values"] = list(self.smoothingDropdownOptions.keys())
         combobox.current(0)
 
         buttonArea = tk.Frame(self.linearSmoothingWindow, width=50, pady=10)
@@ -1843,6 +1845,10 @@ class Lab6MenuDropdown(tk.Menu):
         moments = cv2.moments(parent.cvImage)
         return moments
 
+    def getDataAndExport(self, parent):
+        data = self.getAllData(parent)
+        self.exportToCsv(data)
+
     def getAllData(self, parent):
         areaPerimeter = self.imageAreaPerimeterCalculate(parent)
         cnt = self.getContours(parent)
@@ -1850,6 +1856,23 @@ class Lab6MenuDropdown(tk.Menu):
         extent = self.getExtent(cnt)
         solidity = self.getSolidity(cnt)
         eqiDiameter = self.getEquivalentDiameter(cnt)
+        result = [("Area and Perimeter", areaPerimeter),
+                ("Aspect Ratio", aspectRatio),
+                ("Extent", extent),
+                ("Solidity", solidity),
+                ("Equivalent Diameter", eqiDiameter)
+                ]
+        return result
+
+    def exportToCsv(self, data):
+        name = "Results.csv"
+        with open(name, 'w', newline='') as csvfile:
+            my_writer = csv.writer(csvfile, delimiter=';')
+
+            for item in data:
+                my_writer.writerow(item)
+
+        print(f"Wyeksportowano do ./{name}")
 
 
     def areaPerimeter(self, parent):
@@ -2014,6 +2037,8 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab6MenuDropdown.areaPerimeter(parent))
         self.lab6menu.add_command(label="Pobierz wszystkie dane",
                                   command=lambda: self.lab6MenuDropdown.getAllData(parent))
+        self.lab6menu.add_command(label="Pobierz wszystkie dane i wyeksportuj",
+                                  command=lambda: self.lab6MenuDropdown.getDataAndExport(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
