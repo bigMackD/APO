@@ -104,12 +104,9 @@ class FileMenuDropdown(tk.Menu):
                 title = f"Obraz pierwotny ({str(helper_index)}) - {os.path.basename(imagePath)}"
             window.title(title)
             parent.cvImage = cv2.imread(imagePath, type)
-            test = parent.cvImage[1, 1]
             load = Image.open(imagePath)
-            # load.convert("L")
-
+            helper = list(Image.fromarray(parent.cvImage).getdata())
             if isinstance(list(Image.fromarray(parent.cvImage).getdata())[0], tuple):
-                helper = list(Image.fromarray(parent.cvImage).getdata())
                 content = [helper[i][0] for i in range(len(helper))]
                 parent.loadedImageData = [os.path.basename(imagePath), content, load]
             else:
@@ -119,7 +116,7 @@ class FileMenuDropdown(tk.Menu):
 
             render = ImageTk.PhotoImage(load)
             parent.loadedImageType = parent.imageHelper.getColourType(parent)
-            parent.histogramData = [os.path.basename(imagePath), list(load.getdata()), load]
+            parent.histogramData = [os.path.basename(imagePath), helper, load]
             parent.editedImageData = [parent.loadedImageData[0], parent.loadedImageData[1]]
             # parent.allOpenImagesData[title] = Image.open(imagePath)
             parent.allOpenImagesData[title] = cv2.imread(imagePath, type)
