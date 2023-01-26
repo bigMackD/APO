@@ -1913,6 +1913,95 @@ class Lab6MenuDropdown(tk.Menu):
         equi_diameter = numpy.sqrt(4 * area / numpy.pi)
         return equi_diameter
 
+class ProjectMenuDropdown(tk.Menu):
+    def __init__(self):
+        tk.Menu.__init__(self, tearoff=False)
+
+    def equalize(self, parent):
+        """
+        HSV Equalize
+        """
+        hsvImg, hist_original, hist_equalized = self.equalize_hsv_histogram(parent.cvImage)
+        cv2.imshow('Wyrownany HSV', hsvImg)
+
+        helper = self.Helper
+        helper.createHistogram(self, hsvImg, "Histogram HSV po wyrownaniu")
+        helper.createHistogram(self, parent.cvImage, "Histogram oryginalny")
+        plt.show()
+
+    def equalize_hsv_histogram(self, image):
+
+        # Konwersja z RGB do HSV
+        hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+        # Wyodrębnienie kanału V
+        v = hsv[:, :, 2]
+
+        # Tworzenie histogramu i obliczanie funkcji rozkładu prawdopodobieństwa
+        v_hist, bins = numpy.histogram(v, bins=256, range=(0, 255))
+        v_cdf = v_hist.cumsum()
+
+        # Tworzenie nowego histogramu wyrównanego
+        v_cdf_m = numpy.ma.masked_equal(v_cdf, 0)
+        v_cdf_m = (v_cdf_m - v_cdf_m.min()) * 255 / (v_cdf_m.max() - v_cdf_m.min())
+        v_cdf = numpy.ma.filled(v_cdf_m, 0).astype('uint8')
+
+        # Przeprowadzenie transformacji odwrotnej na nowym histogramie V
+        v_eq = v_cdf[v]
+        hsv[:, :, 2] = v_eq
+
+        # Konwersja z powrotem z HSV do RGB
+        image_eq = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+
+        # Tworzenie histogramów i wyświetlanie ich
+        hist_original = cv2.calcHist([v], [0], None, [256], [0, 256])
+        # cv2.imshow("Original Histogram", hist_original)
+
+        hist_equalized = cv2.calcHist([v_eq], [0], None, [256], [0, 256])
+        # cv2.imshow("Equalized  Histogram", hist_equalized)
+
+        return image_eq, hist_original, hist_equalized
+
+    class Helper(tk.Menu):
+        def __init__(self):
+            tk.Menu.__init__(self, tearoff=False)
+
+        def createHistogram(self, img, title):
+            """
+            Splits color image into separate channels and
+            displays histogram for each
+            """
+
+            y_axis = [0 for i in range(256)]
+            x_axis = [i for i in range(256)]
+
+            # get each channel
+            red_channel = [i[0] for i in img[1]]
+            green_channel = [i[1] for i in img[1]]
+            blue_channel = [i[2] for i in img[1]]
+
+            # get each value
+            def compute_values_count(channel_name):
+                for value in channel_name:
+                    luminence_value = int(value)
+                    y_axis[luminence_value] += 1
+
+            plt.style.use('bmh')
+            plt.figure()
+
+            compute_values_count(red_channel)
+            plt.bar(x_axis, y_axis, color='red', alpha=0.8)
+
+            y_axis = [0 for i in range(256)]
+            compute_values_count(green_channel)
+            plt.bar(x_axis, y_axis, color='green', alpha=0.8)
+
+            y_axis = [0 for i in range(256)]
+            compute_values_count(blue_channel)
+            plt.bar(x_axis, y_axis, color='blue', alpha=0.8)
+            plt.title(title)  # Blue channel
+
+
 class Scaling(tk.Menu):
     def __init__(self):
         tk.Menu.__init__(self, tearoff=False)
@@ -1938,7 +2027,9 @@ class MenuTopBar(tk.Menu):
         self.lab4menu = tk.Menu(self, tearoff=0)
         self.lab5menu = tk.Menu(self, tearoff=0)
         self.lab6menu = tk.Menu(self, tearoff=0)
+        self.lab6menu = tk.Menu(self, tearoff=0)
         self.lab3menuMathCascade = tk.Menu(self.lab3menu, tearoff=0)
+        self.projectMenu = tk.Menu(self.lab3menu, tearoff=0)
         self.scalingMenu = tk.Menu(self, tearoff=0)
         self.fill(parent)
 
@@ -1949,6 +2040,7 @@ class MenuTopBar(tk.Menu):
         self.lab4MenuDropdown = Lab4MenuDropdown()
         self.lab5MenuDropdown = Lab5MenuDropdown()
         self.lab6MenuDropdown = Lab6MenuDropdown()
+        self.projectMenuDropdown = ProjectMenuDropdown()
 
         self.resizeDropdown = Scaling()
 
@@ -2036,6 +2128,10 @@ class MenuTopBar(tk.Menu):
                                   command=lambda: self.lab6MenuDropdown.getAllData(parent))
         self.lab6menu.add_command(label="Pobierz wszystkie dane i wyeksportuj",
                                   command=lambda: self.lab6MenuDropdown.getDataAndExport(parent))
+
+        self.add_cascade(label="Projekt", menu=self.projectMenu)
+        self.projectMenu.add_command(label="Equalizacja histogramu",
+                                  command=lambda: self.projectMenuDropdown.equalize(parent))
 
         self.add_cascade(label="Skalowanie", menu=self.scalingMenu)
         self.scalingMenu.add_command(label="200%", command=lambda: self.resizeDropdown.resize(parent, 4, 4))
