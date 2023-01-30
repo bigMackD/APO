@@ -1931,7 +1931,7 @@ class ProjectMenuDropdown(tk.Menu):
 
     def equalize_hsv_histogram(self, image):
 
-        # Konwersja z RGB do HSV
+        # Konwersja z RGB do HSV przy użyciu cvtColor
         hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
         # Wyodrębnienie kanału V
@@ -1939,26 +1939,26 @@ class ProjectMenuDropdown(tk.Menu):
 
         # Tworzenie histogramu i obliczanie funkcji rozkładu prawdopodobieństwa
         v_hist, bins = numpy.histogram(v, bins=256, range=(0, 255))
-        v_cdf = v_hist.cumsum()
+        cumulativeDistribution = v_hist.cumsum()
 
         # Tworzenie nowego histogramu wyrównanego
-        v_cdf_m = numpy.ma.masked_equal(v_cdf, 0)
-        v_cdf_m = (v_cdf_m - v_cdf_m.min()) * 255 / (v_cdf_m.max() - v_cdf_m.min())
-        v_cdf = numpy.ma.filled(v_cdf_m, 0).astype('uint8')
+        cumulativeDistributionMasked = numpy.ma.masked_equal(cumulativeDistribution, 0)
+        cumulativeDistributionMasked = (cumulativeDistributionMasked - cumulativeDistributionMasked.min()) * 255 \
+                                       / (cumulativeDistributionMasked.max() - cumulativeDistributionMasked.min())
+        cumulativeDistribution = numpy.ma.filled(cumulativeDistributionMasked, 0).astype('uint8')
+
 
         # Przeprowadzenie transformacji odwrotnej na nowym histogramie V
-        v_eq = v_cdf[v]
-        hsv[:, :, 2] = v_eq
+        equalized = cumulativeDistribution[v]
+        hsv[:, :, 2] = equalized
 
         # Konwersja z powrotem z HSV do RGB
         image_eq = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
-        # Tworzenie histogramów i wyświetlanie ich
+        # Tworzenie histogramów
         hist_original = cv2.calcHist([v], [0], None, [256], [0, 256])
-        # cv2.imshow("Original Histogram", hist_original)
 
-        hist_equalized = cv2.calcHist([v_eq], [0], None, [256], [0, 256])
-        # cv2.imshow("Equalized  Histogram", hist_equalized)
+        hist_equalized = cv2.calcHist([equalized], [0], None, [256], [0, 256])
 
         return image_eq, hist_original, hist_equalized
 
@@ -1968,19 +1968,18 @@ class ProjectMenuDropdown(tk.Menu):
 
         def createHistogram(self, img, title):
             """
-            Splits color image into separate channels and
-            displays histogram for each
+            Wyświetla histogram dla obrazu kolorowego
             """
 
             y_axis = [0 for i in range(256)]
             x_axis = [i for i in range(256)]
 
-            # get each channel
+            # pobranie wartosci dla kazdego kanalu
             red_channel = [i[0] for i in img[1]]
             green_channel = [i[1] for i in img[1]]
             blue_channel = [i[2] for i in img[1]]
 
-            # get each value
+            # stworzenie tablicy
             def compute_values_count(channel_name):
                 for value in channel_name:
                     luminence_value = int(value)
@@ -1999,7 +1998,7 @@ class ProjectMenuDropdown(tk.Menu):
             y_axis = [0 for i in range(256)]
             compute_values_count(blue_channel)
             plt.bar(x_axis, y_axis, color='blue', alpha=0.8)
-            plt.title(title)  # Blue channel
+            plt.title(title)
 
 
 class Scaling(tk.Menu):
